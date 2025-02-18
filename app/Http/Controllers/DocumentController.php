@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Comment;
+use App\Models\Department;
 use App\Models\Document;
 use App\Models\Status;
 use App\Models\User;
@@ -19,7 +20,13 @@ class DocumentController extends Controller
      */
     public function index(): JsonResponse
     {
-        $documents = Document::with(['category:id,name', 'status:id,name'])->get();
+        $documents = Document::with([
+            'category:id,name',
+            'status:id,name',
+            'sender_department:id,name',
+            'receiver_department:id,name',
+        ])->get();
+
         return response()->json($documents);
     }
 
@@ -28,11 +35,15 @@ class DocumentController extends Controller
      */
     public function create(): JsonResponse
     {
-        $categories = Category::all();
-        $statuses = Status::all();
+        $categories = Category::select('id', 'name')->get();
+        $statuses = Status::select('id', 'name')->get();
+        $senders_department = Department::senders();
+        $receivers_department = Department::receivers();
         return response()->json([
             'categories' => $categories,
             'statuses' => $statuses,
+            'senders_department' => $senders_department,
+            'receivers_department' => $receivers_department,
         ]);
     }
 
@@ -43,10 +54,15 @@ class DocumentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'reference_number' => 'nullable|string|max:255',
             'category' => 'required|integer',
             'status' => 'required|integer',
-            'receivedDate' => 'required|date',
+            'sender_department' => 'required|integer',
+            'receiver_department' => 'nullable|integer',
+            'issue_date' => 'required|date',
+            'received_date' => 'nullable|date',
+            'description' => 'nullable|string',
+            'priority' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -55,11 +71,17 @@ class DocumentController extends Controller
 
         $document = new Document();
         $document->title = $request->input('title');
-        $document->description = $request->input('description');
+        $document->reference_number = $request->input('reference_number');
         $document->category_id = $request->input('category');
         $document->status_id = $request->input('status');
-        $document->received_date = $request->input('receivedDate');
+        $document->sender_department_id = $request->input('sender_department');
+        $document->receiver_department_id = $request->input('receiver_department');
+        $document->issue_date = $request->input('issue_date');
+        $document->received_date = $request->input('received_date');
         $document->created_by = auth()->id();
+        $document->description = $request->input('description');
+        $document->priority = $request->input('priority');
+        //$document->is_public = $request->input('isPublic');
         $document->save();
 
         return response()->json(['message' => 'Documento creado con éxito.', 'document' => $document], 201);
@@ -70,7 +92,13 @@ class DocumentController extends Controller
      */
     public function show(Document $document): JsonResponse
     {
-        $document->load(['category:id,name', 'status:id,name', 'user:id,name']);
+        $document->load([
+            'category:id,name',
+            'status:id,name',
+            'sender_department:id,name',
+            'receiver_department:id,name',
+            'user:id,name'
+        ]);
         $comment = Comment::with(['user:id,name', 'document', 'replies'])->where('document_id', $document->id)->get();
 
         return response()->json([
@@ -82,14 +110,17 @@ class DocumentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Document $document): JsonResponse
+    public function edit(): JsonResponse
     {
-        $categories = Category::all();
-        $statuses = Status::all();
+        $categories = Category::select('id', 'name')->get();
+        $statuses = Status::select('id', 'name')->get();
+        $senders_department = Department::senders();
+        $receivers_department = Department::receivers();
         return response()->json([
-            'document' => $document,
             'categories' => $categories,
             'statuses' => $statuses,
+            'senders_department' => $senders_department,
+            'receivers_department' => $receivers_department,
         ]);
     }
 
@@ -100,10 +131,15 @@ class DocumentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'reference_number' => 'nullable|string|max:255',
             'category' => 'required|integer',
             'status' => 'required|integer',
-            'receivedDate' => 'required|date',
+            'sender_department' => 'required|integer',
+            'receiver_department' => 'nullable|integer',
+            'issue_date' => 'required|date',
+            'received_date' => 'nullable|date',
+            'description' => 'nullable|string',
+            'priority' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
@@ -111,10 +147,16 @@ class DocumentController extends Controller
         }
 
         $document->title = $request->input('title');
-        $document->description = $request->input('description');
+        $document->reference_number = $request->input('reference_number');
         $document->category_id = $request->input('category');
         $document->status_id = $request->input('status');
-        $document->received_date = $request->input('receivedDate');
+        $document->sender_department_id = $request->input('sender_department');
+        $document->receiver_department_id = $request->input('receiver_department');
+        $document->issue_date = $request->input('issue_date');
+        $document->received_date = $request->input('received_date');
+        $document->description = $request->input('description');
+        $document->priority = $request->input('priority');
+        //$document->is_public = $request->input('isPublic');
         $document->save();
 
         return response()->json(['message' => 'Documento actualizado con éxito.', 'document' => $document]);
