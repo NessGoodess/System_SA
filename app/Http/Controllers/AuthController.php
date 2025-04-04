@@ -10,54 +10,32 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-
-    public function index()
-    {
-        return User::all();
-    }
-
-    public function register(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password)
-        ]);
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()
-            ->json([
-                'data' => $user,
-                'access_token' => $token,
-                'token_type' => 'Bearer'
-            ], 201);
-    }
-
-    public function login(Request $request)
+    /**
+    * Create a login token for the user.
+     */
+    public function store(Request $request)
     {
         $fields = $request->validate([
-            'email' => 'required|string',
+            'email' => 'required|string|email',
             'password' => 'required|string'
         ]);
 
-        if (!Auth::attempt($fields)) {
+        $user = User::where('email', $fields['email'])->first();
+
+        if (!$user) {
             return response()->json([
-                'message' => 'Unauthorized'
+                'message' => 'The User does not exist',
             ], 401);
         }
 
-        $user = User::where('email', $fields['email'])->firstorFail();
+        if (!Hash::check($fields['password'], $user->password)) {
+            return response()->json([
+                'email' => $fields['email'],
+                'message' => 'The password is incorrect'
+            ], 401);
+        }
+
+        $profileImage = $user->profile;
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -67,10 +45,14 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type' => 'Bearer',
                 'user' => $user,
+                'profile_image' => $profileImage
             ], 200);
     }
 
-    public function logoutCurrentSession(Request $request)
+    /**
+     * Log the user out (Invalidate the token).
+     */
+    public function destroy(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
@@ -79,11 +61,15 @@ class AuthController extends Controller
         ], 200);
     }
 
+    /**
+     * Log the user out of all devices, delete all tokens.
+     */
     public function logoutAllDevices()
     {
         auth()->user()->tokens()->delete();
         return response()->json([
-            'message' => 'You have been successfully logged out and the token has successfully deleted'
+            'message' => 'You have been successfully logged out'
         ], 200);
     }
+
 }
