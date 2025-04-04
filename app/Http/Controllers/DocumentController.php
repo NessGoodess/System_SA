@@ -28,6 +28,71 @@ class DocumentController extends Controller
         ])->get();
 
         return response()->json($documents);
+
+        /*
+
+        $statusName = $request->query('status'); // Recibir el nombre del estado desde el cliente
+
+        // Si se proporciona un estado, obtener su ID
+        $statusId = null;
+        if ($statusName) {
+            $status = Status::where('name', $statusName)->first();
+            $statusId = $status ? $status->id : null;
+        }
+
+        // Filtrar documentos por status_id si se proporciona
+        $documents = Document::with('status')
+            ->when($statusId, function ($query, $statusId) {
+            return $query->where('status_id', $statusId);
+            })
+            ->paginate(5);
+
+        // Obtener los estados disponibles
+        $statuses = Status::all(['id', 'name']);
+
+        return response()->json([
+            'documents' => $documents,
+            'statuses' => $statuses,
+            'filters' => [
+            'status' => $statusName
+            ]
+        ]);
+        */
+
+        /*
+    // Obtener los parámetros de la solicitud
+    $startRow = $request->query('startRow', 0);  // Por defecto, empieza desde la fila 0
+    $endRow = $request->query('endRow', 10);    // Por defecto, 10 filas por página
+    $status = $request->query('status', 'todos');  // Por defecto, "todos"
+    $startDate = $request->query('dateRange.start', null);  // Fecha de inicio (opcional)
+    $endDate = $request->query('dateRange.end', null);      // Fecha de fin (opcional)
+
+    // Iniciar la consulta
+    $query = Document::query();
+
+    // Filtrar por 'status' si se ha proporcionado
+    if ($status && $status !== 'todos') {
+        $query->whereHas('status', function ($q) use ($status) {
+            $q->where('name', $status);
+        });
+    }
+
+    // Filtrar por rango de fechas si se han proporcionado
+    if ($startDate && $endDate) {
+        $query->whereBetween('created_at', [Carbon::parse($startDate), Carbon::parse($endDate)]);
+    }
+
+    // Paginación
+    $totalRows = $query->count(); // Número total de registros
+    $data = $query->with(['category:id,name', 'status:id,name'])->skip($startRow)->take($endRow - $startRow)->get();
+
+    // Retornar los resultados con paginación
+    return response()->json([
+        'rows' => $data,
+        'totalRows' => $totalRows,
+    ]);
+*/
+
     }
 
     /**
