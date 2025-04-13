@@ -40,7 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum', 'role:admin')->group(function () {
     Route::get('/users', [AdminProfileController::class, 'index']);
     Route::post('/users/register', [AdminProfileController::class, 'store']);
     Route::get('/users/{user}', [AdminProfileController::class, 'show']);

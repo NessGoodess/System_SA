@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 class AdminProfileController extends Controller
 {
     /**
-    * Display a listing of the existing users.
+     * Display a listing of the existing users.
      */
     public function index()
     {
@@ -26,6 +26,9 @@ class AdminProfileController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
+            'role' => 'required|string|in:admin,user',
+            'permissions' => 'required|array',
+            'permissions.*' => 'string|exists:permissions,name',
         ]);
 
         if ($validator->fails()) {
@@ -34,16 +37,28 @@ class AdminProfileController extends Controller
             ], 422);
         }
 
+        $role = $request->input('role');
+        $permissions = $request->input('permissions', []);
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password)
         ]);
 
+        // Assign role and permissions to the user
+        $user->assignRole($role);
+        if ($role === 'user' || !empty($permissions)) {
+            // Sync permissions to ensure the user has the correct permissions
+            $user->syncPermissions($permissions);
+        }
+
         return response()
             ->json([
                 'message' => 'User created successfully',
                 'data' => $user,
+                'roles' => $user->getRoleNames(),
+                'permissions' => $user->getPermissionNames(),
             ], 201);
     }
 
@@ -57,7 +72,7 @@ class AdminProfileController extends Controller
     }
 
     /**
-    * Remove the specified user.
+     * Remove the specified user.
      */
     public function destroy(User $user)
     {
