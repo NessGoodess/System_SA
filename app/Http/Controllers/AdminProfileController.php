@@ -24,7 +24,7 @@ class AdminProfileController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'username' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|string|in:admin,user',
             'permissions' => 'required|array',
@@ -42,7 +42,7 @@ class AdminProfileController extends Controller
 
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'username' => $request->username,
             'password' => Hash::make($request->password)
         ]);
 

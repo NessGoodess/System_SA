@@ -29,10 +29,10 @@ class UserProfileController extends Controller
     public function update(Request $request): JsonResponse
     {
         try {
-            // Validamos manualmente los datos recibidos
+            // Manually validate the received data
             $validator = Validator::make($request->all(), [
                 'name' => 'sometimes|string|max:255',
-                'email' => 'sometimes|email|unique:users,email,' . $request->user()->id,
+                'username' => 'sometimes|string|unique:users,username,' . $request->user()->id,
                 'profile_photo' => 'sometimes|image|max:2048', // Max 2MB
             ]);
 
@@ -42,20 +42,20 @@ class UserProfileController extends Controller
 
             $user = $request->user();
 
-            // Asignar manualmente los datos validados
+            // Manually assign the validated data
             $data = $validator->validated();
             $user->fill($data);
 
-            // Si se sube una imagen
+            // If an image is uploaded
             if ($request->hasFile('profile_photo')) {
                 $path = $request->file('profile_photo')->store('profile_photos', 'public');
                 $user->profile_photo = $path;
             }
 
-            // Si se cambia el email, reiniciar verificación
-            if (isset($data['email']) && $user->isDirty('email')) {
-                $user->email_verified_at = null;
-            }
+            // If the username is changed, reset verification
+            //if (isset($data['username']) && $user->isDirty('username')) {
+            //    $user->email_verified_at = null;
+            //}
 
             $user->save();
 

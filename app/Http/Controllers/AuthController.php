@@ -16,11 +16,11 @@ class AuthController extends Controller
     public function store(Request $request)
     {
         $fields = $request->validate([
-            'email' => 'required|string|email',
+            'username' => 'required|string',
             'password' => 'required|string'
         ]);
 
-        $user = User::where('email', $fields['email'])->first();
+        $user = User::where('username', $fields['username'])->first();
 
         if (!$user) {
             return response()->json([
@@ -30,7 +30,7 @@ class AuthController extends Controller
 
         if (!Hash::check($fields['password'], $user->password)) {
             return response()->json([
-                'email' => $fields['email'],
+                'username' => $fields['username'],
                 'message' => 'The password is incorrect'
             ], 401);
         }
