@@ -46,6 +46,10 @@ class AdminProfileController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
+        $user->profile()->create([
+            'profile_photo' => 'default-profile-photo.svg',
+        ]);
+
         // Assign role and permissions to the user
         $user->assignRole($role);
         if ($role === 'user' || !empty($permissions)) {
