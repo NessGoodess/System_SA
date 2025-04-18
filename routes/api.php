@@ -88,6 +88,7 @@ Route::middleware('auth:sanctum', 'role:admin')->group(function () {
     Route::get('/users', [AdminProfileController::class, 'index']);
     Route::post('/users/register', [AdminProfileController::class, 'store']);
     Route::get('/users/{user}', [AdminProfileController::class, 'show']);
+    Route::put('/users/{user}', [AdminProfileController::class, 'update']);
     Route::delete('/users/{user}', [AdminProfileController::class, 'destroy']);
     Route::get('/dashboard', [DocumentController::class, 'controlPanel']);
     Route::get('/activities', [ActivityController::class, 'index']);

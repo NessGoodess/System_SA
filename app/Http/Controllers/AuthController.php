@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RecordActivities;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
     /**
-    * Create a login token for the user.
+     * Create a login token for the user.
      */
     public function store(Request $request)
     {
@@ -20,9 +19,9 @@ class AuthController extends Controller
             'password' => 'required|string'
         ]);
 
-        $user = User::where('username', $fields['username'])->first();
-
-        if (!$user) {
+        try {
+            $user = User::where('username', $fields['username'])->firstOrFail();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'The User does not exist',
             ], 401);
@@ -37,7 +36,11 @@ class AuthController extends Controller
 
         $profileImage = $user->profile;
 
+        if (!$user->hasRole('admin')) {
+            RecordActivities::dispatchSync($user, 'login', null, 'Inicio de sesión');
+        }
         $token = $user->createToken('auth_token')->plainTextToken;
+
 
         return response()
             ->json([
@@ -54,7 +57,13 @@ class AuthController extends Controller
      */
     public function destroy(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+
+        $user->currentAccessToken()->delete();
+
+        if (!$user->hasRole('admin')) {
+            RecordActivities::dispatchSync($user, 'Logout', null, 'Cerro sesión');
+        }
 
         return response()->json([
             'message' => 'Logged out'
@@ -71,5 +80,4 @@ class AuthController extends Controller
             'message' => 'You have been successfully logged out'
         ], 200);
     }
-
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RecordActivities;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Department;
@@ -92,7 +93,6 @@ class DocumentController extends Controller
         'totalRows' => $totalRows,
     ]);
 */
-
     }
 
     /**
@@ -131,7 +131,9 @@ class DocumentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         $document = new Document();
@@ -149,7 +151,21 @@ class DocumentController extends Controller
         //$document->is_public = $request->input('isPublic');
         $document->save();
 
-        return response()->json(['message' => 'Documento creado con éxito.', 'document' => $document], 201);
+        RecordActivities::dispatch(
+            auth()->user(),
+            'create',
+            $document,
+            'Se ha creado un nuevo documento.',
+            [
+                'title' => $document->title,
+                'status_id' => $document->status_id,
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Documento creado con éxito.',
+            'document' => $document
+        ], 201);
     }
 
     /**
@@ -165,6 +181,17 @@ class DocumentController extends Controller
             'user:id,name'
         ]);
         $comment = Comment::with(['user:id,name', 'document', 'replies'])->where('document_id', $document->id)->get();
+
+        RecordActivities::dispatch(
+            auth()->user(),
+            'view',
+            $document,
+            [
+                'title' => $document->title,
+                'status_id' => $document->status_id,
+            ],
+            'Se ha visualizado el documento.'
+        );
 
         return response()->json([
             'document' => $document,
@@ -224,6 +251,17 @@ class DocumentController extends Controller
         //$document->is_public = $request->input('isPublic');
         $document->save();
 
+        RecordActivities::dispatch(
+            auth()->user(),
+            'update',
+            $document,
+            [
+                'title' => $document->title,
+                'status_id' => $document->status_id,
+            ],
+            'Se ha actualizado el documento.'
+        );
+
         return response()->json(['message' => 'Documento actualizado con éxito.', 'document' => $document]);
     }
 
@@ -233,6 +271,18 @@ class DocumentController extends Controller
     public function destroy(Document $document): JsonResponse
     {
         $document->delete();
+
+        RecordActivities::dispatch(
+            auth()->user(),
+            'delete',
+            $document,
+            [
+                'title' => $document->title,
+                'status_id' => $document->status_id,
+            ],
+            'Se ha eliminado el documento.'
+        );
+
         return response()->json(['message' => 'Documento eliminado con éxito.']);
     }
 

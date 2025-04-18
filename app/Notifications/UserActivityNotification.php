@@ -17,10 +17,11 @@ class UserActivityNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(Activity $activity)
-    {
-        $this->activity = $activity;
-    }
+    public function __construct(
+        public string $action,
+        public string $user_name,
+        public ?string $description,
+    ) {}
 
     /**
      * Get the notification's delivery channels.
@@ -40,15 +41,9 @@ class UserActivityNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'user_id' => $this->activity->user_id,
-            'user_name' => $this->activity->user_name,
-            'action' => $this->activity->action,
-            'model_type' => $this->activity->model_type,
-            'document_id' => $this->activity->document_id,
-            'document_name' => $this->activity->document_name,
-            'changes' => $this->activity->changes,
-            'description' => $this->activity->description,
-            'read_by_admin' => $this->activity->read_by_admin,
+            'title' => 'Actividad: {$this->action}',
+            'message' => 'El usuario {$this->user_name} ha realizado la actividad: {$this->action}',
+            'description' => $this->description,
         ];
     }
 }
