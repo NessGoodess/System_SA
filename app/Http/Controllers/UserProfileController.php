@@ -35,7 +35,7 @@ class UserProfileController extends Controller
                 'new_password' => 'sometimes|string|min:8|confirmed',
                 'current_password' => 'sometimes|required_with:new_password|string|min:8',
 
-                'profile_photo' => 'sometimes|image|max:2048', // Max 2MB
+                'profile_photo' => 'required|image|max:2048', // Max 2MB
             ]);
 
             if ($validator->fails()) {
@@ -48,16 +48,15 @@ class UserProfileController extends Controller
             $user->fill($data);
 
             if ($request->hasFile('profile_photo')) {
-                $path = $request->file('profile_photo')->store('profile_photos', 'public');
-                $user->profile_photo = $path;
-            }
+                $photo = $request->file('profile_photo');
+                $path = $photo->store('profile_photos', 'public');
 
-            if ($request->hasFile('profile_photo')) {
-                if ($user->profile_photo) {
-                    Storage::disk('public')->delete($user->profile_photo);
+                if ($user->profile->profile_photo) {
+                    Storage::disk('public')->delete($user->profile->profile_photo);
                 }
-                $path = $request->file('profile_photo')->store('profile_photos', 'public');
-                $user->profile_photo = $path;
+
+                $user->profile->profile_photo = $path;
+                $user->profile->save();
             }
 
             if ($request->has('new_password')) {
@@ -69,20 +68,16 @@ class UserProfileController extends Controller
                 $user->password = Hash::make($request->input('new_password'));
             }
 
-            if ($request->has('name')) {
-                $user->name = $request->input('name');
-            }
-            if ($request->has('username')) {
-                $user->username = $request->input('username');
-            }
-
-            if ($user->isDirty()) {
-                $user->save();
-            }
+            if ($request->has('name')) $user->name = $request->input('name');
+            if ($request->has('username')) $user->username = $request->input('username');
+            if ($user->isDirty()) $user->save();
 
             return response()->json([
                 'status' => 'profile-updated',
-                'user' => $user->only(['name', 'username', 'profile_photo']),
+                'user' => array_merge(
+                    $user->only(['name', 'username']),
+                    ['profile_photo' => $user->profile->profile_photo ?? null]
+                ),
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to update profile: ' . $e->getMessage()], 500);

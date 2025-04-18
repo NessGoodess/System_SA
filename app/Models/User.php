@@ -51,6 +51,15 @@ class User extends Authenticatable
         ];
     }
 
+    protected static function booted()
+    {
+        static::created(function (User $user) {
+            $user->profile()->create([
+                'profile_photo' => 'default-profile-photo.svg',
+            ]);
+        });
+    }
+
     /**
      * Get the profile associated with the User
      *

@@ -13,9 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
+        $admin = User::factory()->create([
             'name' => 'Administrador',
             'username' => 'Ness0024',
+        ]);
+
+        $admin->profile()->create([
+            'profile_photo' => 'default-profile-photo.svg',
         ]);
 
         User::factory(10)->create();
