@@ -14,8 +14,10 @@ class AdminProfileController extends Controller
      */
     public function index()
     {
-        return response()->json(User::all(), 200);
-    }
+        return response()->json([
+            User::where('role', 'user')->get(),
+        ], 200);
+    } 
 
     /**
      * Store a newly created user session, and create a token for the user.
@@ -44,10 +46,6 @@ class AdminProfileController extends Controller
             'name' => $request->name,
             'username' => $request->username,
             'password' => Hash::make($request->password)
-        ]);
-
-        $user->profile()->create([
-            'profile_photo' => 'default-profile-photo.svg',
         ]);
 
         // Assign role and permissions to the user

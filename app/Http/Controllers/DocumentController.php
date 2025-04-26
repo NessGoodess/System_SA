@@ -152,7 +152,7 @@ class DocumentController extends Controller
         $document->save();
 
         RecordActivities::dispatch(
-            auth()->user(),
+            auth()->user,
             'create',
             $document,
             'Se ha creado un nuevo documento.',
@@ -182,16 +182,20 @@ class DocumentController extends Controller
         ]);
         $comment = Comment::with(['user:id,name', 'document', 'replies'])->where('document_id', $document->id)->get();
 
-        RecordActivities::dispatch(
-            auth()->user(),
-            'view',
-            $document,
-            [
-                'title' => $document->title,
-                'status_id' => $document->status_id,
-            ],
-            'Se ha visualizado el documento.'
-        );
+        $user = auth()->user();
+
+        if (!$user->hasRole('admin')) {
+            RecordActivities::dispatch(
+                $user,
+                'view',
+                $document,
+                'Se ha visualizado el documento.',
+                [
+                    'title' => $document->title,
+                    'status_id' => $document->status_id,
+                ]
+            );
+        }
 
         return response()->json([
             'document' => $document,
@@ -255,11 +259,11 @@ class DocumentController extends Controller
             auth()->user(),
             'update',
             $document,
+            'Se ha actualizado el documento.',
             [
                 'title' => $document->title,
                 'status_id' => $document->status_id,
-            ],
-            'Se ha actualizado el documento.'
+            ]
         );
 
         return response()->json(['message' => 'Documento actualizado con éxito.', 'document' => $document]);
@@ -276,11 +280,11 @@ class DocumentController extends Controller
             auth()->user(),
             'delete',
             $document,
+            'Se ha eliminado el documento.',
             [
                 'title' => $document->title,
                 'status_id' => $document->status_id,
-            ],
-            'Se ha eliminado el documento.'
+            ]
         );
 
         return response()->json(['message' => 'Documento eliminado con éxito.']);
