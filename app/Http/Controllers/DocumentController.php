@@ -185,15 +185,12 @@ class DocumentController extends Controller
         $user = auth()->user();
 
         if (!$user->hasRole('admin')) {
-            RecordActivities::dispatch(
+            RecordActivities::dispatchSync(
                 $user,
                 'view',
                 $document,
                 'Se ha visualizado el documento.',
-                [
-                    'title' => $document->title,
-                    'status_id' => $document->status_id,
-                ]
+                []
             );
         }
 
@@ -255,7 +252,7 @@ class DocumentController extends Controller
         //$document->is_public = $request->input('isPublic');
         $document->save();
 
-        RecordActivities::dispatch(
+        RecordActivities::dispatchSync(
             auth()->user(),
             'update',
             $document,
@@ -274,9 +271,8 @@ class DocumentController extends Controller
      */
     public function destroy(Document $document): JsonResponse
     {
-        $document->delete();
 
-        RecordActivities::dispatch(
+        RecordActivities::dispatchSync(
             auth()->user(),
             'delete',
             $document,
@@ -284,8 +280,9 @@ class DocumentController extends Controller
             [
                 'title' => $document->title,
                 'status_id' => $document->status_id,
-            ]
-        );
+                ]
+            );
+            $document->delete();
 
         return response()->json(['message' => 'Documento eliminado con éxito.']);
     }

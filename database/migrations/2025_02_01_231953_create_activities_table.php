@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('user_name');
             $table->string('action'); //// login, logout, view, create, update, delete
             $table->string('model_type')->nullable();
-            $table->unsignedBigInteger('document_id')->nullable();
+            $table->string('document_id')->nullable();
             $table->string('document_name')->nullable();
             $table->json('changes')->nullable();
             $table->text('description')->nullable();
