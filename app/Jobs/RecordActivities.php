@@ -44,10 +44,11 @@ class RecordActivities implements ShouldQueue
             'description' => $this->description,
             'read_by_admin' => false,
         ]);
-
-        $admins = User::role('admin')->get();
-        foreach ($admins as $admin) {
+        if (!$this->user->hasRole('admin')) {
+            $admins = User::role('admin')->get();
+            foreach ($admins as $admin) {
             Notification::send($admin, new UserActivityNotification($this->action, $this->user->name, $this->description));
+            }
         }
     }
 }

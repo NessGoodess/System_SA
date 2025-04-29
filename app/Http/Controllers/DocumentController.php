@@ -28,30 +28,30 @@ class DocumentController extends Controller
             'receiver_department:id,name',
         ])->get()->map(function ($document) {
             return [
-            'id' => $document->id,
-            'title' => $document->title,
-            'reference_number' => $document->reference_number,
-            'description' => $document->description,
-            'created_by' => $document->created_by,
-            'category' => [
-            'id' => $document->category->id ?? null,
-            'name' => $document->category->name ?? null,
-            ],
-            'status' => [
-            'id' => $document->status->id ?? null,
-            'name' => $document->status->name ?? null,
-            ],
-            'sender_department' => [
-            'id' => $document->sender_department->id ?? null,
-            'name' => $document->sender_department->name ?? null,
-            ],
-            'receiver_department' => [
-            'id' => $document->receiver_department->id ?? null,
-            'name' => $document->receiver_department->name ?? null,
-            ],
-            'issue_date' => $document->issue_date,
-            'received_date' => $document->received_date,
-            'priority' => $document->priority,
+                'id' => $document->id,
+                'title' => $document->title,
+                'reference_number' => $document->reference_number,
+                'description' => $document->description,
+                'created_by' => $document->created_by,
+                'category' => [
+                    'id' => $document->category->id ?? null,
+                    'name' => $document->category->name ?? null,
+                ],
+                'status' => [
+                    'id' => $document->status->id ?? null,
+                    'name' => $document->status->name ?? null,
+                ],
+                'sender_department' => [
+                    'id' => $document->sender_department->id ?? null,
+                    'name' => $document->sender_department->name ?? null,
+                ],
+                'receiver_department' => [
+                    'id' => $document->receiver_department->id ?? null,
+                    'name' => $document->receiver_department->name ?? null,
+                ],
+                'issue_date' => $document->issue_date,
+                'received_date' => $document->received_date,
+                'priority' => $document->priority,
             ];
         });
 
@@ -152,15 +152,17 @@ class DocumentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
-            'reference_number' => 'nullable|string|max:255',
+            'reference_number' => 'nullable|string|max:255|unique:documents,reference_number',
             'category' => 'required|integer',
             'status' => 'required|integer',
-            'sender_department' => 'required|integer',
+            'sender_department' => 'required_if:new_sender_department,null|integer',
             'receiver_department' => 'nullable|integer',
             'issue_date' => 'required|date',
             'received_date' => 'nullable|date',
             'description' => 'nullable|string',
             'priority' => 'nullable|integer',
+            'new_sender_department' => 'nullable|string|max:255',
+            'description_new_sender_department' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -174,7 +176,24 @@ class DocumentController extends Controller
         $document->reference_number = $request->input('reference_number');
         $document->category_id = $request->input('category');
         $document->status_id = $request->input('status');
-        $document->sender_department_id = $request->input('sender_department');
+
+        if ($request->input('new_sender_department')) {
+            $description = $request->input('description_new_sender_department')
+                ? $request->input('description_new_sender_department')
+                : $request->input('new_sender_department');
+
+            $department = Department::create([
+                'name' => $request->input('new_sender_department'),
+                'description' => $description,
+                'type' => 'sender',
+            ]);
+
+            $document->sender_department_id = $department->id;
+
+        } else {
+            $document->sender_department_id = $request->input('sender_department');
+        }
+
         $document->receiver_department_id = $request->input('receiver_department');
         $document->issue_date = $request->input('issue_date');
         $document->received_date = $request->input('received_date');
@@ -185,7 +204,7 @@ class DocumentController extends Controller
         $document->save();
 
         RecordActivities::dispatch(
-            auth()->user,
+            auth()->user(),
             'create',
             $document,
             'Se ha creado un nuevo documento.',

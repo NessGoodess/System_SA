@@ -92,4 +92,5 @@ Route::middleware('auth:sanctum', 'role:admin')->group(function () {
     Route::delete('/users/{user}', [AdminProfileController::class, 'destroy']);
     Route::get('/dashboard', [DocumentController::class, 'controlPanel']);
     Route::get('/activities', [ActivityController::class, 'index']);
+    Route::get('/notifications', [AdminProfileController::class, 'sendNotification']);
 });

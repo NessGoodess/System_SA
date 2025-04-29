@@ -28,7 +28,7 @@ class UserActivityNotification extends Notification
      *
      * @return array<int, string>
      */
-    public function via(object $notifiable): array
+    public function via(): array
     {
         return ['database'];
     }
@@ -38,11 +38,11 @@ class UserActivityNotification extends Notification
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toArray(): array
     {
         return [
-            'title' => 'Actividad: {$this->action}',
-            'message' => 'El usuario {$this->user_name} ha realizado la actividad: {$this->action}',
+            'title' => "Actividad: {$this->action}",
+            'message' => "El usuario {$this->user_name} ha realizado la actividad: {$this->action}",
             'description' => $this->description,
         ];
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use DragonCode\PrettyArray\Services\Formatters\Json;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -17,7 +18,7 @@ class AdminProfileController extends Controller
         return response()->json([
             User::where('role', 'user')->get(),
         ], 200);
-    } 
+    }
 
     /**
      * Store a newly created user session, and create a token for the user.
@@ -157,5 +158,20 @@ class AdminProfileController extends Controller
         return response()->json([
             'message' => 'User deleted successfully'
         ], 200);
+    }
+
+    /**
+     * Display the authenticated user's notifications.
+     */
+    public function sendNotification()
+    {
+        $user = auth()->user();
+
+        return response()->json([
+            'notifications' => $user->notifications,
+            'unread_notifications' => $user->unreadNotifications,
+
+        ]);
+
     }
 }
