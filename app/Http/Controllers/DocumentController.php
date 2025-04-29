@@ -26,9 +26,42 @@ class DocumentController extends Controller
             'status:id,name',
             'sender_department:id,name',
             'receiver_department:id,name',
-        ])->get();
+        ])->get()->map(function ($document) {
+            return [
+            'id' => $document->id,
+            'title' => $document->title,
+            'reference_number' => $document->reference_number,
+            'description' => $document->description,
+            'created_by' => $document->created_by,
+            'category' => [
+            'id' => $document->category->id ?? null,
+            'name' => $document->category->name ?? null,
+            ],
+            'status' => [
+            'id' => $document->status->id ?? null,
+            'name' => $document->status->name ?? null,
+            ],
+            'sender_department' => [
+            'id' => $document->sender_department->id ?? null,
+            'name' => $document->sender_department->name ?? null,
+            ],
+            'receiver_department' => [
+            'id' => $document->receiver_department->id ?? null,
+            'name' => $document->receiver_department->name ?? null,
+            ],
+            'issue_date' => $document->issue_date,
+            'received_date' => $document->received_date,
+            'priority' => $document->priority,
+            ];
+        });
 
-        return response()->json($documents);
+        $priorities = ['None', 'Low', 'Medium', 'High'];
+
+        return response()->json([
+            'documents' => $documents,
+            'priorities' => $priorities,
+        ]);
+
 
         /*
 
@@ -280,9 +313,9 @@ class DocumentController extends Controller
             [
                 'title' => $document->title,
                 'status_id' => $document->status_id,
-                ]
-            );
-            $document->delete();
+            ]
+        );
+        $document->delete();
 
         return response()->json(['message' => 'Documento eliminado con éxito.']);
     }
