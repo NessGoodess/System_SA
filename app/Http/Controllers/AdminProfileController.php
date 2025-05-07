@@ -15,9 +15,9 @@ class AdminProfileController extends Controller
      */
     public function index()
     {
-        return response()->json([
-            User::where('role', 'user')->get(),
-        ], 200);
+        $users = User::role('user')->get();
+
+        return response()->json($users, 200);
     }
 
     /**
@@ -170,7 +170,6 @@ class AdminProfileController extends Controller
         return response()->json([
             'notifications' => $user->notifications,
             'unread_notifications' => $user->unreadNotifications,
-
         ]);
 
     }

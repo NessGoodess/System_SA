@@ -18,13 +18,17 @@ class DatabaseSeeder extends Seeder
             'username' => 'Ness0024',
         ]);
 
-        User::factory(10)->create();
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+        ]);
+
+        User::factory(10)->withRole('user')->create();
+
         $this->call([
             CategorySeeder::class,
             StatusSeeder::class,
             DepartmentSeeder::class,
             DocumentSeeder::class,
-            RolesAndPermissionsSeeder::class,
         ]);
     }
 }
