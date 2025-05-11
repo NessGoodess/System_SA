@@ -13,9 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
+        $admin = User::factory()->create([
             'name' => 'Administrador',
             'username' => 'Ness0024',
+        ]);
+
+        $admin->profile()->create([
+            'profile_photo' => 'profile_photos/default/default-profile-photo.svg',
         ]);
 
         $this->call([
@@ -23,6 +27,8 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::factory(10)->withRole('user')->create();
+
+        
 
         $this->call([
             CategorySeeder::class,

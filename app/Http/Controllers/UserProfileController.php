@@ -15,9 +15,16 @@ class UserProfileController extends Controller
      */
     public function edit(Request $request): JsonResponse
     {
-        return response()->json([
-            'user' => $request->user(),
-        ]);
+        $user = $request->user();
+
+        $userData = [
+            'name' => $user->name,
+            'username' => $user->username,
+            'email' => $user->email,
+            'profile_photo' => $user->profile_photo_url,
+        ];
+
+        return response()->json($userData, 200);
     }
 
     /**
@@ -33,9 +40,9 @@ class UserProfileController extends Controller
                 'username' => 'sometimes|string|max:255|unique:users,username,' . $user->id,
 
                 'new_password' => 'sometimes|string|min:8|confirmed',
-                'current_password' => 'sometimes|required_with:new_password|string|min:8',
+                'current_password' => 'required_with:new_password,new_password_confirmation',
 
-                'profile_photo' => 'required|image|max:2048', // Max 2MB
+                'profile_photo' => 'sometimes|image|max:2048', // Max 2MB
             ]);
 
             if ($validator->fails()) {
@@ -47,17 +54,10 @@ class UserProfileController extends Controller
             $data = $validator->validated();
             $user->fill($data);
 
-            if ($request->hasFile('profile_photo')) {
-                $photo = $request->file('profile_photo');
-                $path = $photo->store('profile_photos', 'public');
+            // Handle profile photo upload
 
-                if ($user->profile->profile_photo) {
-                    Storage::disk('public')->delete($user->profile->profile_photo);
-                }
-
-                $user->profile->profile_photo = $path;
-                $user->profile->save();
-            }
+            $profile = $user->profile ?? $user->profile()->create();
+            $profile->updatePhoto($request->file('profile_photo'));
 
             if ($request->has('new_password')) {
                 if (!Hash::check($request->input('current_password'), $user->password)) {
@@ -76,7 +76,7 @@ class UserProfileController extends Controller
                 'status' => 'profile-updated',
                 'user' => array_merge(
                     $user->only(['name', 'username']),
-                    ['profile_photo' => $user->profile->profile_photo ?? null]
+                    ['profile_photo' => $user->profile_photo_url]
                 ),
             ], 200);
         } catch (\Exception $e) {

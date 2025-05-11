@@ -15,7 +15,14 @@ class AdminProfileController extends Controller
      */
     public function index()
     {
-        $users = User::role('user')->get();
+        $users = User::role('user')->get()->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'profile_photo' => $user->profile_photo_url,
+            ];
+        });
 
         return response()->json($users, 200);
     }
