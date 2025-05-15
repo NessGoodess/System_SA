@@ -21,111 +21,38 @@ class DocumentController extends Controller
      */
     public function index(): JsonResponse
     {
-        $documents = Document::with([
-            'category:id,name',
-            'status:id,name',
-            'sender_department:id,name',
-            'receiver_department:id,name',
-        ])->get()->map(function ($document) {
-            return [
-                'id' => $document->id,
-                'title' => $document->title,
-                'reference_number' => $document->reference_number,
-                'description' => $document->description,
-                'created_by' => $document->created_by,
-                'category' => [
-                    'id' => $document->category->id ?? null,
-                    'name' => $document->category->name ?? null,
-                ],
-                'status' => [
-                    'id' => $document->status->id ?? null,
-                    'name' => $document->status->name ?? null,
-                ],
-                'sender_department' => [
-                    'id' => $document->sender_department->id ?? null,
-                    'name' => $document->sender_department->name ?? null,
-                ],
-                'receiver_department' => [
-                    'id' => $document->receiver_department->id ?? null,
-                    'name' => $document->receiver_department->name ?? null,
-                ],
-                'issue_date' => $document->issue_date,
-                'received_date' => $document->received_date,
-                'priority' => $document->priority,
-            ];
-        });
+        $user = auth()->user();
 
-        $priorities = ['None', 'Low', 'Medium', 'High'];
-
-        return response()->json([
-            'documents' => $documents,
-            'priorities' => $priorities,
-        ]);
-
-
-        /*
-
-        $statusName = $request->query('status'); // Recibir el nombre del estado desde el cliente
-
-        // Si se proporciona un estado, obtener su ID
-        $statusId = null;
-        if ($statusName) {
-            $status = Status::where('name', $statusName)->first();
-            $statusId = $status ? $status->id : null;
+        if($user->isAdmin()) {
+            $documents = Document::with([
+                'category:id,name',
+                'status:id,name',
+                'sender_department:id,name',
+                'receiver_department:id,name',
+            ])->paginate(5);
+        } else {
+            $documents = Document::with([
+                'category:id,name',
+                'status:id,name',
+                'sender_department:id,name',
+                'receiver_department:id,name',
+            ])->where('receiver_department_id', $user->department_id)->paginate(5);
         }
 
-        // Filtrar documentos por status_id si se proporciona
-        $documents = Document::with('status')
-            ->when($statusId, function ($query, $statusId) {
-            return $query->where('status_id', $statusId);
-            })
-            ->paginate(5);
-
-        // Obtener los estados disponibles
-        $statuses = Status::all(['id', 'name']);
+        if ($documents->isEmpty()) {
+            return response()->json([
+                'documents' => [],
+                'message' => 'No hay registros.',
+            ]);
+        }
 
         return response()->json([
             'documents' => $documents,
-            'statuses' => $statuses,
-            'filters' => [
-            'status' => $statusName
-            ]
+
         ]);
-        */
 
-        /*
-    // Obtener los parámetros de la solicitud
-    $startRow = $request->query('startRow', 0);  // Por defecto, empieza desde la fila 0
-    $endRow = $request->query('endRow', 10);    // Por defecto, 10 filas por página
-    $status = $request->query('status', 'todos');  // Por defecto, "todos"
-    $startDate = $request->query('dateRange.start', null);  // Fecha de inicio (opcional)
-    $endDate = $request->query('dateRange.end', null);      // Fecha de fin (opcional)
 
-    // Iniciar la consulta
-    $query = Document::query();
 
-    // Filtrar por 'status' si se ha proporcionado
-    if ($status && $status !== 'todos') {
-        $query->whereHas('status', function ($q) use ($status) {
-            $q->where('name', $status);
-        });
-    }
-
-    // Filtrar por rango de fechas si se han proporcionado
-    if ($startDate && $endDate) {
-        $query->whereBetween('created_at', [Carbon::parse($startDate), Carbon::parse($endDate)]);
-    }
-
-    // Paginación
-    $totalRows = $query->count(); // Número total de registros
-    $data = $query->with(['category:id,name', 'status:id,name'])->skip($startRow)->take($endRow - $startRow)->get();
-
-    // Retornar los resultados con paginación
-    return response()->json([
-        'rows' => $data,
-        'totalRows' => $totalRows,
-    ]);
-*/
     }
 
     /**
@@ -150,13 +77,15 @@ class DocumentController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $user = auth()->user();
+
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'reference_number' => 'nullable|string|max:255|unique:documents,reference_number',
             'category' => 'required|integer',
             'status' => 'required|integer',
             'sender_department' => 'required_if:new_sender_department,null|integer',
-            'receiver_department' => 'nullable|integer',
+            'receiver_department' => $user->isAdmin() ? 'required|integer' : 'nullable|integer',
             'issue_date' => 'required|date',
             'received_date' => 'nullable|date',
             'description' => 'nullable|string',
@@ -189,31 +118,35 @@ class DocumentController extends Controller
             ]);
 
             $document->sender_department_id = $department->id;
-
         } else {
             $document->sender_department_id = $request->input('sender_department');
         }
 
-        $document->receiver_department_id = $request->input('receiver_department');
+        if ($user->isAdmin()) {
+            $document->receiver_department_id = $request->input('receiver_department');
+        } else {
+            $document->receiver_department_id = $user->department_id;
+        }
+
         $document->issue_date = $request->input('issue_date');
         $document->received_date = $request->input('received_date');
-        $document->created_by = auth()->id();
+        $document->created_by = $user->id;
         $document->description = $request->input('description');
         $document->priority = $request->input('priority');
-        //$document->is_public = $request->input('isPublic');
         $document->save();
 
-        RecordActivities::dispatch(
-            auth()->user(),
-            'create',
-            $document,
-            'Se ha creado un nuevo documento.',
-            [
-                'title' => $document->title,
-                'status_id' => $document->status_id,
-            ]
-        );
-
+        if (!$user->isAdmin()) {
+            RecordActivities::dispatch(
+                $user,
+                'create',
+                $document,
+                'Se ha creado un nuevo documento.',
+                [
+                    'title' => $document->title,
+                    'status_id' => $document->status_id,
+                ]
+            );
+        }
         return response()->json([
             'message' => 'Documento creado con éxito.',
             'document' => $document
@@ -303,6 +236,7 @@ class DocumentController extends Controller
         $document->priority = $request->input('priority');
         //$document->is_public = $request->input('isPublic');
         $document->save();
+
 
         RecordActivities::dispatchSync(
             auth()->user(),

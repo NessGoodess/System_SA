@@ -74,7 +74,25 @@ class User extends Authenticatable
         ]);
     }
 
+    /**
+     * Get the department that owns the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
 
+    /**
+     * Get the Document that owns the User
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class);
+    }
 
     /**
      * Get all of the Activities for the User
@@ -92,5 +110,10 @@ class User extends Authenticatable
     public function getProfilePhotoUrlAttribute(): string
     {
         return url(Storage::url($this->profile->profile_photo));
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
     }
 }

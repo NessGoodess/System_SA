@@ -13,27 +13,57 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $admin = User::factory()->create([
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+            CategorySeeder::class,
+            StatusSeeder::class,
+            DepartmentSeeder::class,
+        ]);
+
+        $admin = User::factory()->withRole('admin')->create([
             'name' => 'Administrador',
             'username' => 'Ness0024',
         ]);
 
-        $admin->profile()->create([
-            'profile_photo' => 'profile_photos/default/default-profile-photo.svg',
+        $directorRH = User::factory()->withRole('user')->create([
+            'name' => 'Director de Recursos Humanos',
+            'username' => 'DirectorRH',
+            'department_id' => 1, // Direccion de Recursos Humanos
         ]);
 
-        $this->call([
-            RolesAndPermissionsSeeder::class,
+        $subdirectorRH = User::factory()->withRole('user')->create([
+            'name' => 'Subdirector de Recursos Humanos',
+            'username' => 'SubdirectorRH',
+            'department_id' => 2, // Subdireccion de Recursos Humanos
         ]);
 
-        User::factory(10)->withRole('user')->create();
+        $directorNomina = User::factory()->withRole('user')->create([
+            'name' => 'Director de Nomina Academica',
+            'username' => 'DirectorNA',
+            'department_id' => 3, // Direccion de Nomina Academica
+        ]);
+        $directorControlPresupuestal = User::factory()->withRole('user')->create([
+            'name' => 'Director de Control Presupuestal e Inventarios',
+            'username' => 'DirectorCPeI',
+            'department_id' => 4, // Direccion de Control Presupuestal e Inventarios
+        ]);
+        $directorArchivo = User::factory()->withRole('user')->create([
+            'name' => 'Director de Archivo',
+            'username' => 'DirectorArchivo',
+            'department_id' => 5, // Direccion de Archivo
+        ]);
 
-        
+        // Ensure each user exists and the profile relationship is defined in the User model
+        foreach ([$admin, $directorRH, $subdirectorRH, $directorNomina, $directorControlPresupuestal, $directorArchivo] as $user) {
+            if ($user) {
+                $user->profile()->create([
+                    'profile_photo' => 'profile_photos/default/default-profile-photo.svg',
+                ]);
+            }
+        }
 
         $this->call([
-            CategorySeeder::class,
-            StatusSeeder::class,
-            DepartmentSeeder::class,
+
             DocumentSeeder::class,
         ]);
     }
