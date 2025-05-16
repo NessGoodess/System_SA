@@ -19,16 +19,37 @@ class Department extends Model
 
     public static function receivers()
     {
-        return self::where ('type', 'receiver')->orderBy('name')->get(['id', 'name']);
+        return self::where('type', 'receiver')->orderBy('name')->get(['id', 'name']);
     }
 
     /**
-     * Get all of the documents for the Department
+     * Get the users for the department
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function documents(): HasMany
+    public function users(): HasMany
     {
-        return $this->hasMany(Document::class);
+        return $this->hasMany(User::class);
+    }
+
+    /**
+     * Get all of the documents for the sender department
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function sentDocuments(): HasMany
+    {
+        return $this->hasMany(Document::class, 'sender_department_id');
+    }
+
+    /**
+     * Get all of the documents for the receiver department
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+
+    public function receivedDocuments()
+    {
+        return $this->hasMany(Document::class, 'receiver_department_id');
     }
 }

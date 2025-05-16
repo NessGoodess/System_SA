@@ -30,8 +30,8 @@ class RolesAndPermissionsSeeder extends Seeder
         $userRole->givePermissionTo(['read']);
 
         // Assign roles to users
-        $user = User::find(1); // Assuming the first user is the admin
+        //$user = User::find(1); // Assuming the first user is the admin
         //$user = User::where('email', 'admin@example.com')->first();
-        $user->assignRole($adminRole);
+        //$user->assignRole($adminRole);
     }
 }
