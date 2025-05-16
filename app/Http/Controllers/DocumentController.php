@@ -19,40 +19,52 @@ class DocumentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $user = auth()->user();
 
-        if($user->isAdmin()) {
-            $documents = Document::with([
-                'category:id,name',
-                'status:id,name',
-                'sender_department:id,name',
-                'receiver_department:id,name',
-            ])->paginate(5);
-        } else {
-            $documents = Document::with([
-                'category:id,name',
-                'status:id,name',
-                'sender_department:id,name',
-                'receiver_department:id,name',
-            ])->where('receiver_department_id', $user->department_id)->paginate(5);
-        }
-
-        if ($documents->isEmpty()) {
-            return response()->json([
-                'documents' => [],
-                'message' => 'No hay registros.',
-            ]);
-        }
-
-        return response()->json([
-            'documents' => $documents,
-
+        $query = Document::with([
+            'category:id,name',
+            'status:id,name',
+            'sender_department:id,name',
+            'receiver_department:id,name',
         ]);
 
+        if (!$user->isAdmin()) {
+            $query->where('receiver_department_id', $user->department_id);
+        }
 
+        if ($request->filled('status_id')) {
+            $query->where('status_id', $request->status_id);
+        }
 
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        $perPage = $request->get('per_page', 1);
+        $documents = $query->paginate($perPage);
+
+        return response()->json([
+            'documents' => $documents->items(),
+            'pagination' => [
+                'total' => $documents->total(),
+                'per_page' => $documents->perPage(),
+                'current_page' => $documents->currentPage(),
+                'last_page' => $documents->lastPage(),
+                'from' => $documents->firstItem(),
+                'to' => $documents->lastItem(),
+            ],
+            'message' => $documents->isEmpty() ? 'No hay registros.' : null,
+        ]);
     }
 
     /**
