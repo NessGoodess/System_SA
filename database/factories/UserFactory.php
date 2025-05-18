@@ -26,8 +26,9 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'username' => fake()->unique()->userName(),
-            'email' => fake()->unique()->safeEmail(),
-            'department_id' => fake()->numberBetween(1, 5),
+            //'email' => fake()->unique()->safeEmail(),
+            'email' => null,
+            // 'department_id' => fake()->numberBetween(1, 5),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
@@ -38,6 +39,13 @@ class UserFactory extends Factory
     {
         return $this->afterCreating(function ($user) use ($role) {
             $user->assignRole($role);
+        });
+    }
+
+    public function withPermissions(array $permissions): static
+    {
+        return $this->afterCreating(function ($user) use ($permissions) {
+            $user->givePermissionTo($permissions);
         });
     }
 

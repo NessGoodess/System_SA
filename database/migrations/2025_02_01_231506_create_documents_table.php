@@ -29,7 +29,7 @@ return new class extends Migration
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('restrict');
             $table->foreign('status_id')->references('id')->on('statuses')->onDelete('restrict');
             $table->foreign('sender_department_id')->references('id')->on('departments')->onDelete('set null');
-            $table->foreign('receiver_department_id')->references('id')->on('departments')->onDelete('set null');
+            $table->foreign('receiver_department_id')->references('id')->on('departments')->onDelete('restrict');
             $table->foreign('created_by')->references('id')->on('users')->onDelete('set null');
 
         });

@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreDocumentRequest;
+use App\Http\Requests\UpdateDocumentRequest;
+use App\Http\Requests\UploadDocumentFilesRequest;
+use App\Http\Resources\FileResource;
+use App\Services\DocumentService;
 use App\Jobs\RecordActivities;
 use App\Models\Category;
 use App\Models\Comment;
@@ -13,9 +18,18 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class DocumentController extends Controller
 {
+
+    protected $documentService;
+    public function __construct(DocumentService $documentService)
+    {
+        $this->documentService = $documentService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -50,7 +64,7 @@ class DocumentController extends Controller
             $query->whereDate('created_at', '<=', $request->end_date);
         }
 
-        $perPage = $request->get('per_page', 1);
+        $perPage = $request->get('per_page', 15);
         $documents = $query->paginate($perPage);
 
         return response()->json([
@@ -87,82 +101,29 @@ class DocumentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreDocumentRequest $request): JsonResponse
     {
-        $user = auth()->user();
-
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'reference_number' => 'nullable|string|max:255|unique:documents,reference_number',
-            'category' => 'required|integer',
-            'status' => 'required|integer',
-            'sender_department' => 'required_if:new_sender_department,null|integer',
-            'receiver_department' => $user->isAdmin() ? 'required|integer' : 'nullable|integer',
-            'issue_date' => 'required|date',
-            'received_date' => 'nullable|date',
-            'description' => 'nullable|string',
-            'priority' => 'nullable|integer',
-            'new_sender_department' => 'nullable|string|max:255',
-            'description_new_sender_department' => 'nullable|string|max:255',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $document = new Document();
-        $document->title = $request->input('title');
-        $document->reference_number = $request->input('reference_number');
-        $document->category_id = $request->input('category');
-        $document->status_id = $request->input('status');
-
-        if ($request->input('new_sender_department')) {
-            $description = $request->input('description_new_sender_department')
-                ? $request->input('description_new_sender_department')
-                : $request->input('new_sender_department');
-
-            $department = Department::create([
-                'name' => $request->input('new_sender_department'),
-                'description' => $description,
-                'type' => 'sender',
-            ]);
-
-            $document->sender_department_id = $department->id;
-        } else {
-            $document->sender_department_id = $request->input('sender_department');
-        }
-
-        if ($user->isAdmin()) {
-            $document->receiver_department_id = $request->input('receiver_department');
-        } else {
-            $document->receiver_department_id = $user->department_id;
-        }
-
-        $document->issue_date = $request->input('issue_date');
-        $document->received_date = $request->input('received_date');
-        $document->created_by = $user->id;
-        $document->description = $request->input('description');
-        $document->priority = $request->input('priority');
-        $document->save();
-
-        if (!$user->isAdmin()) {
-            RecordActivities::dispatch(
-                $user,
-                'create',
-                $document,
-                'Se ha creado un nuevo documento.',
-                [
-                    'title' => $document->title,
-                    'status_id' => $document->status_id,
-                ]
+        try {
+            $document = $this->documentService->createDocument(
+                array_merge($request->validated(), ['created_by' => auth()->user()->id]),
+                $request->file('files')
             );
+
+            return response()->json([
+                'message' => 'Documento creado exitosamente.',
+                'document' => $document->load('files')
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'No se pudo crear el documento.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 400);
         }
-        return response()->json([
-            'message' => 'Documento creado con éxito.',
-            'document' => $document
-        ], 201);
     }
 
     /**
@@ -175,7 +136,8 @@ class DocumentController extends Controller
             'status:id,name',
             'sender_department:id,name',
             'receiver_department:id,name',
-            'user:id,name'
+            'user:id,name',
+            'files',
         ]);
         $comment = Comment::with(['user:id,name', 'document', 'replies'])->where('document_id', $document->id)->get();
 
@@ -217,51 +179,29 @@ class DocumentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Document $document): JsonResponse
+    public function update(UpdateDocumentRequest $request, Document $document): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'reference_number' => 'nullable|string|max:255',
-            'category' => 'required|integer',
-            'status' => 'required|integer',
-            'sender_department' => 'required|integer',
-            'receiver_department' => 'nullable|integer',
-            'issue_date' => 'required|date',
-            'received_date' => 'nullable|date',
-            'description' => 'nullable|string',
-            'priority' => 'nullable|integer',
-        ]);
+        try {
+            $updateDocument = $this->documentService->updateDocument(
+                $document,
+                $request->validated()
+            );
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return response()->json([
+                'message' => 'Documento actualizado exitosamente.',
+                'document' => $updateDocument->load('files')
+            ], 200);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'No se pudo actualizar el documento.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 400);
         }
-
-        $document->title = $request->input('title');
-        $document->reference_number = $request->input('reference_number');
-        $document->category_id = $request->input('category');
-        $document->status_id = $request->input('status');
-        $document->sender_department_id = $request->input('sender_department');
-        $document->receiver_department_id = $request->input('receiver_department');
-        $document->issue_date = $request->input('issue_date');
-        $document->received_date = $request->input('received_date');
-        $document->description = $request->input('description');
-        $document->priority = $request->input('priority');
-        //$document->is_public = $request->input('isPublic');
-        $document->save();
-
-
-        RecordActivities::dispatchSync(
-            auth()->user(),
-            'update',
-            $document,
-            'Se ha actualizado el documento.',
-            [
-                'title' => $document->title,
-                'status_id' => $document->status_id,
-            ]
-        );
-
-        return response()->json(['message' => 'Documento actualizado con éxito.', 'document' => $document]);
     }
 
     /**
@@ -286,30 +226,95 @@ class DocumentController extends Controller
     }
 
     /**
+     * Add files to the document.
+     */
+
+    public function addFiles(UploadDocumentFilesRequest $request, Document $document): JsonResponse
+    {
+        try {
+            $uploadFiles = $this->documentService->addFilesToDocument(
+                $document,
+                $request->file('files')
+            );
+
+            return response()->json([
+                'message' => 'Archivos agregados exitosamente.',
+                'document' => $uploadFiles->load('files')
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Error de validación.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'No se pudo agregar los archivos al documento.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 400);
+        }
+    }
+
+    /**
+     * Remove files from the document.
+     */
+    public function removeFiles(Request $request, Document $document): JsonResponse
+    {
+        $request->validate([
+            'file_id' => 'required|integer|exists:files,id',
+        ]);
+
+        $fileId = $request->input('file_id');
+
+        $file = $document->files()->findOrFail($fileId);
+
+        $fileData = $file->toArray();
+        $file->delete();
+
+        RecordActivities::dispatchSync(
+            auth()->user(),
+            'Archivo eliminado',
+            $fileData,
+            'Se ha eliminado el archivo del documento.',
+            [
+                'title' => $document->title,
+                'file_id' => $fileData['id'],
+            ]
+        );
+
+        return response()->json(['message' => 'Archivo eliminado con éxito.']);
+    }
+
+    /**
      * Search documents by filters.
      */
     public function filters(Request $request): JsonResponse
     {
-        $filters = $request->only(['status', 'category', 'start_date', 'end_date']);
+        $user = auth()->user();
 
-        $documents = Document::query()
-            ->when($filters['status'] ?? null, function ($query, $status) {
-                $query->where('status_id', $status);
-            })
-            ->when($filters['category'] ?? null, function ($query, $category) {
-                $query->where('category_id', $category);
-            })
-            ->when($filters['start_date'] ?? null, function ($query, $start_date) use ($filters) {
-                $query->whereBetween('created_at', [$start_date, $filters['end_date']]);
-            })
-            ->with('category', 'status')
-            ->get();
+        $query = Document::with([
+            'category:id,name',
+            'status:id,name',
+            'sender_department:id,name',
+            'receiver_department:id,name',
+        ]);
+
+        $query->when($request->filled('status_id'), fn($q, $status) => $q->where('status_id', $status))
+            ->when($request->filled('category_id'), fn($q, $category) => $q->where('category_id', $category))
+            ->when($request->filled('start_date'), fn($q) => $q->whereDate('created_at', '>=', $request->start_date))
+            ->when($request->filled('end_date'), fn($q) => $q->whereDate('created_at', '<=', $request->end_date))
+            ->when(!$user->isAdmin(), fn($q) => $q->where('receiver_department_id', $user->department_id));
+
+        $perPage = $request->get('per_page', 15);
+        $documents = $query->paginate($perPage);
 
         return response()->json([
             'documents' => $documents,
-            'categories' => Category::select('id', 'name')->get(),
-            'statuses' => Status::select('id', 'name')->get(),
-            'filters' => $filters,
+            'meta' => [
+                'categories' => Category::select('id', 'name')->get(),
+                'statuses' => Status::select('id', 'name')->get(),
+            ],
+            'message' => $documents->isEmpty() ? 'No hay documentos con estos filtros.' : null
         ]);
     }
 
