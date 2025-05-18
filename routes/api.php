@@ -68,6 +68,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
     });
 
+    Route::middleware('auth:sanctum', 'permission:update')->group(function () {
+        Route::post('/documents/{document}/files', [DocumentController::class, 'addFiles']);
+        Route::delete('/documents/{document}/files/{file}', [DocumentController::class, 'removeFile']);
+    });
+
     Route::middleware('auth:sanctum', 'permission:read')->group(function () {
         Route::match(['get', 'post'], '/filters', [DocumentController::class, 'filters']);
         Route::get('/search', [DocumentController::class, 'search']);

@@ -20,34 +20,35 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
         ]);
 
+        $permisions = ['read', 'create', 'update'];
         $admin = User::factory()->withRole('admin')->create([
             'name' => 'Administrador',
             'username' => 'Ness0024',
         ]);
 
-        $directorRH = User::factory()->withRole('user')->create([
+        $directorRH = User::factory()->withRole('user')->withPermissions($permisions)->create([
             'name' => 'Director de Recursos Humanos',
             'username' => 'DirectorRH',
             'department_id' => 1, // Direccion de Recursos Humanos
         ]);
 
-        $subdirectorRH = User::factory()->withRole('user')->create([
+        $subdirectorRH = User::factory()->withRole('user')->withPermissions($permisions)->create([
             'name' => 'Subdirector de Recursos Humanos',
             'username' => 'SubdirectorRH',
             'department_id' => 2, // Subdireccion de Recursos Humanos
         ]);
 
-        $directorNomina = User::factory()->withRole('user')->create([
+        $directorNomina = User::factory()->withRole('user')->withPermissions($permisions)->create([
             'name' => 'Director de Nomina Academica',
             'username' => 'DirectorNA',
             'department_id' => 3, // Direccion de Nomina Academica
         ]);
-        $directorControlPresupuestal = User::factory()->withRole('user')->create([
+        $directorControlPresupuestal = User::factory()->withRole('user')->withPermissions($permisions)->create([
             'name' => 'Director de Control Presupuestal e Inventarios',
             'username' => 'DirectorCPeI',
             'department_id' => 4, // Direccion de Control Presupuestal e Inventarios
         ]);
-        $directorArchivo = User::factory()->withRole('user')->create([
+        $directorArchivo = User::factory()->withRole('user')->withPermissions($permisions)->create([
             'name' => 'Director de Archivo',
             'username' => 'DirectorArchivo',
             'department_id' => 5, // Direccion de Archivo

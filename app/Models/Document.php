@@ -90,4 +90,14 @@ class Document extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * Get all of the files for the Document
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function files(): HasMany
+    {
+        return $this->hasMany(DocumentFile::class);
+    }
+
 }
