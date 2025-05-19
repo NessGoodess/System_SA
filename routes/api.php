@@ -24,6 +24,7 @@ Route::get('/user', function (Request $request) {
  * API Routes for user authentication.
  */
 Route::post('login', [AuthController::class, 'store']);
+Route::get('/check_token', [Authcontroller::class, 'checkToken']);
 
 /**
  * API Routes for user profile and authentication management.
