@@ -5,20 +5,19 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
 use App\Http\Requests\UploadDocumentFilesRequest;
-use App\Http\Resources\FileResource;
 use App\Services\DocumentService;
 use App\Jobs\RecordActivities;
 use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Department;
 use App\Models\Document;
+use App\Models\DocumentFile;
 use App\Models\Status;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class DocumentController extends Controller
@@ -241,7 +240,6 @@ class DocumentController extends Controller
                 'message' => 'Archivos agregados exitosamente.',
                 'document' => $uploadFiles->load('files')
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Error de validación.',
@@ -258,31 +256,46 @@ class DocumentController extends Controller
     /**
      * Remove files from the document.
      */
-    public function removeFiles(Request $request, Document $document): JsonResponse
+    public function removeFiles(Document $document, DocumentFile $file): JsonResponse
     {
-        $request->validate([
-            'file_id' => 'required|integer|exists:files,id',
-        ]);
+        DB::beginTransaction();
+        try {
+            if (!$file) {
+                return response()->json(['message' => 'El archivo no existe.'], 404);
+            }
+            if ($file->document_id !== $document->id) {
+                abort(404, 'El archivo no pertenece al documento.');
+            }
 
-        $fileId = $request->input('file_id');
+            $filePath = $file->file_path;
+            $fileData = $file->fresh();
 
-        $file = $document->files()->findOrFail($fileId);
+            if (Storage::disk('public')->exists($filePath)) {
+                Storage::disk('public')->delete($filePath);
+            }
 
-        $fileData = $file->toArray();
-        $file->delete();
+            RecordActivities::dispatchSync(
+                auth()->user(),
+                'Archivo eliminado',
+                $fileData,
+                'Se ha eliminado el archivo del documento.',
+                [
+                    'title' => $document->title,
+                    'file_id' => $fileData->id,
+                ]
+            );
 
-        RecordActivities::dispatchSync(
-            auth()->user(),
-            'Archivo eliminado',
-            $fileData,
-            'Se ha eliminado el archivo del documento.',
-            [
-                'title' => $document->title,
-                'file_id' => $fileData['id'],
-            ]
-        );
+            $file->delete();
 
-        return response()->json(['message' => 'Archivo eliminado con éxito.']);
+            DB::commit();
+
+            return response()->json(['message' => 'Archivo eliminado']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'No se pudo eliminar el archivo.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 400);
+        }
     }
 
     /**
