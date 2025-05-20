@@ -15,7 +15,7 @@ class FileUploadService
      * @param string $disk
      * @return array
      */
-    public function upload($files, string $folder = 'documents', string $disk = 'public'): array
+    public function upload($files, string $folder = 'documents', string $disk = 'private'): array
     {
         if ($files instanceof UploadedFile) {
             return [$this->processFile($files, $folder, $disk)];
@@ -37,6 +37,8 @@ class FileUploadService
      */
     protected function processFile(UploadedFile $file, string $folder, string $disk): array
     {
+        Storage::disk($disk)->makeDirectory($folder);
+        
         $filename = $this->generateFilename($file);
         $path = $file->storeAs($folder, $filename, $disk);
 
@@ -73,13 +75,15 @@ class FileUploadService
     /**
      * Generate proper file URL based on disk configuration
      */
-    protected function generateFileUrl(string $path, string $disk): string
+    protected function generateFileUrl(string $path, string $disk): ?string
     {
-        if ($disk === 's3') {
-            return Storage::disk($disk)->url($path);
+        if ($disk === 'private') {
+            return null; // Storage::disk($disk)->url($path);
         }
 
-        return config('app.url') . '/storage/' . ltrim($path, 'public/');
+        return $disk === 's3'
+            ? Storage::disk($disk)->url($path)
+            : config('app.url') . '/storage/' . ltrim($path, 'public/');
     }
 
 

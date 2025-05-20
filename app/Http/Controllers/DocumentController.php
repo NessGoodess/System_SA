@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Requests\UpdateDocumentRequest;
-use App\Http\Requests\UploadDocumentFilesRequest;
-use App\Http\Resources\FileResource;
 use App\Services\DocumentService;
 use App\Jobs\RecordActivities;
 use App\Models\Category;
@@ -17,8 +15,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class DocumentController extends Controller
@@ -139,7 +135,14 @@ class DocumentController extends Controller
             'user:id,name',
             'files',
         ]);
-        $comment = Comment::with(['user:id,name', 'document', 'replies'])->where('document_id', $document->id)->get();
+        $comment = Comment::with([
+            'user:id,name',
+            'document',
+            'replies'
+        ])->where(
+            'document_id',
+            $document->id
+        )->get();
 
         $user = auth()->user();
 
@@ -222,67 +225,9 @@ class DocumentController extends Controller
         );
         $document->delete();
 
-        return response()->json(['message' => 'Documento eliminado con éxito.']);
-    }
-
-    /**
-     * Add files to the document.
-     */
-
-    public function addFiles(UploadDocumentFilesRequest $request, Document $document): JsonResponse
-    {
-        try {
-            $uploadFiles = $this->documentService->addFilesToDocument(
-                $document,
-                $request->file('files')
-            );
-
-            return response()->json([
-                'message' => 'Archivos agregados exitosamente.',
-                'document' => $uploadFiles->load('files')
-            ], 201);
-
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Error de validación.',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'No se pudo agregar los archivos al documento.',
-                'error' => config('app.debug') ? $e->getMessage() : null,
-            ], 400);
-        }
-    }
-
-    /**
-     * Remove files from the document.
-     */
-    public function removeFiles(Request $request, Document $document): JsonResponse
-    {
-        $request->validate([
-            'file_id' => 'required|integer|exists:files,id',
-        ]);
-
-        $fileId = $request->input('file_id');
-
-        $file = $document->files()->findOrFail($fileId);
-
-        $fileData = $file->toArray();
-        $file->delete();
-
-        RecordActivities::dispatchSync(
-            auth()->user(),
-            'Archivo eliminado',
-            $fileData,
-            'Se ha eliminado el archivo del documento.',
-            [
-                'title' => $document->title,
-                'file_id' => $fileData['id'],
-            ]
-        );
-
-        return response()->json(['message' => 'Archivo eliminado con éxito.']);
+        return response()->json([
+            'message' => 'Documento eliminado.'
+        ], 200);
     }
 
     /**
