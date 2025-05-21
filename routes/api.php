@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
  */
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/documents', [DocumentController::class, 'index']);
+    Route::get('/documents/formMetaData', [DocumentController::class, 'formMetaData']);
 
     Route::middleware('auth:sanctum', 'permission:create')->group(function () {
         Route::get('/documents/create', [DocumentController::class, 'create']);

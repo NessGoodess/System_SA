@@ -231,6 +231,25 @@ class DocumentController extends Controller
     }
 
     /**
+     * Get shared form data for creation/editing of resources.
+     */
+    public function formMetadata(): JsonResponse
+    {
+        $categories = Category::select('id', 'name')->get();
+        $statuses = Status::select('id', 'name')->get();
+        $senders_department = Department::senders();
+        $receivers_department = Department::receivers();
+
+        return response()->json([
+            'categories' => $categories,
+            'statuses' => $statuses,
+            'senders_department' => $senders_department,
+            'receivers_department' => $receivers_department,
+        ]);
+    }
+
+
+    /**
      * Search documents by filters.
      */
     public function filters(Request $request): JsonResponse
