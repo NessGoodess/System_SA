@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentFileController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -69,10 +70,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
     });
 
-    Route::middleware('auth:sanctum', 'permission:update')->group(function () {
-        Route::post('/documents/{document}/files', [DocumentController::class, 'addFiles']);
-        Route::delete('/documents/{document}/files/{file}', [DocumentController::class, 'removeFiles']);
-    });
+
 
     Route::middleware('auth:sanctum', 'permission:read')->group(function () {
         Route::match(['get', 'post'], '/filters', [DocumentController::class, 'filters']);
@@ -81,6 +79,20 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/comments', [CommentController::class, 'store']);
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:sanctum', 'permission:update')->group(function () {
+        Route::post('/documents/{document}/files', [DocumentFileController::class, 'store']);
+    });
+    Route::middleware('auth:sanctum', 'permission:delete')->group(function () {
+        Route::delete('/documents/{document}/files/{file}', [DocumentFileController::class, 'destroy']);
+    });
+    Route::middleware(['permission:read'])->group(function () {
+        Route::get('/documents/{document}/files/{file}/preview', [DocumentFileController::class, 'show']);
+        Route::get('/documents/{document}/files/{file}/download', [DocumentFileController::class, 'download']);
+    });
+
 });
 
 
