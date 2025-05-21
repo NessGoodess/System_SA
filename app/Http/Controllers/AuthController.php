@@ -12,7 +12,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 class AuthController extends Controller
 {
 
-    protected $tokenExpirationMinutes = 240; 
+    protected $tokenExpirationMinutes = 240;
 
     /**
      * Create a login token for the user.
@@ -99,14 +99,13 @@ class AuthController extends Controller
     }
 
     /**
-     * Verifica el estado del token actual
+     * Verify the token.
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
    public function checkToken(Request $request)
 {
-    // 1. Verificar si el token existe y es válido (pero puede estar expirado)
     if (!$request->bearerToken()) {
         return response()->json([
             'valid' => false,
@@ -115,7 +114,6 @@ class AuthController extends Controller
     }
 
     try {
-        // 2. Verificar el token manualmente
         $token = PersonalAccessToken::findToken($request->bearerToken());
 
         if (!$token) {
@@ -127,13 +125,12 @@ class AuthController extends Controller
 
         $user = $token->tokenable;
 
-        // 3. Verificar expiración
         if ($token->expires_at && $token->expires_at->isPast()) {
             $token->delete();
             return response()->json([
                 'valid' => false,
                 'message' => 'Token expirado',
-                'expired' => true // Bandera especial para el frontend
+                'expired' => true
             ], 401);
         }
 
