@@ -39,6 +39,7 @@ class AdminProfileController extends Controller
             'role' => 'required|string|in:admin,user',
             'permissions' => 'required|array',
             'permissions.*' => 'string|exists:permissions,name',
+            'department_id' => 'nullable|exists:departments,id',
         ]);
 
         if ($validator->fails()) {
@@ -62,13 +63,22 @@ class AdminProfileController extends Controller
             // Sync permissions to ensure the user has the correct permissions
             $user->syncPermissions($permissions);
         }
+        // Assign department to the user
+        if ($request->has('department_id')) {
+            $user->department()->associate($request->input('department_id'));
+            $user->save();
+        }
 
         return response()
             ->json([
                 'message' => 'User created successfully',
-                'data' => $user,
+                'data' => $user-> only(['id', 'name', 'username']),
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getPermissionNames(),
+                'department' => $user->department ? [
+                    'id' => $user->department->id,
+                    'name' => $user->department->name,
+                ] : null,
             ], 201);
     }
 
@@ -78,7 +88,19 @@ class AdminProfileController extends Controller
 
     public function show(User $user)
     {
-        return response()->json($user, 200);
+         return response()->json(
+            [
+                'id' => $user->id,
+                'name' => $user->name,
+                'username' => $user->username,
+                'profile_photo' => $user->profile_photo_url,
+                'roles' => $user->getRoleNames(),
+                'permissions' => $user->getPermissionNames(),
+                'department' => $user->department ? [
+                    'id' => $user->department->id,
+                    'name' => $user->department->name,
+                ] : null,
+            ], 200);
     }
 
     /**
