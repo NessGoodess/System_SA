@@ -62,17 +62,15 @@ class DocumentFileController extends Controller
     public function show(Document $document, DocumentFile $file)
     {
         if ($file->document_id !== $document->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
+        abort(403);
+    }
 
-        return response()->json($file);
+    $path = Storage::disk('private')->path($file->file_path);
 
-        return response()->file(
-            Storage::disk('private')->path($file->file_path),
-            ['Content-Type' => $file->mime_type]
-        );
+    return response()->file($path, [
+        'Content-Type' => $file->mime_type,
+        'Content-Disposition' => 'inline; filename="'.$file->file_name.'"'
+    ]);
     }
 
     /**
