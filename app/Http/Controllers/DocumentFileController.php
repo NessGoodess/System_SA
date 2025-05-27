@@ -59,18 +59,38 @@ class DocumentFileController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Document $document, DocumentFile $file)
+        public function show(Document $document, DocumentFile $file)
     {
-        if ($file->document_id !== $document->id) {
-        abort(403);
-    }
+        if (!Storage::disk('private')->exists($file->file_path)) {
+            return response()->json(['message' => 'El archivo no existe.'], 404);
+        }
 
-    $path = Storage::disk('private')->path($file->file_path);
+        $temporaryUrl = URL::temporarySignedRoute(
+            'api.files.download',
+            now()->addMinutes(5),
+            ['document' => $document->id, 'file' => $file->id],
+            absolute: false
+        );
 
-    return response()->file($path, [
-        'Content-Type' => $file->mime_type,
-        'Content-Disposition' => 'inline; filename="'.$file->file_name.'"'
-    ]);
+        $relativeUrl = parse_url($temporaryUrl, PHP_URL_PATH). '?' . parse_url($temporaryUrl, PHP_URL_QUERY);
+
+        return response()->json([
+            'file_name' => $file->file_name,
+            'temporary_url' => $relativeUrl,
+            'expires_at' => now()->addMinutes(5)->toDateTimeString()
+        ]);
+
+
+        /*if ($file->document_id !== $document->id) {
+            abort(403);
+        }
+
+        $path = Storage::disk('private')->path($file->file_path);
+
+        return response()->file($path, [
+            'Content-Type' => $file->mime_type,
+            'Content-Disposition' => 'inline; filename="' . $file->file_name . '"'
+        ]);*/
     }
 
     /**
@@ -121,9 +141,27 @@ class DocumentFileController extends Controller
     /**
      * Download the specified file.
      */
-    public function download(Document $document, DocumentFile $file)
+    public function download(Document $document, DocumentFile $file): Stream|JsonResponse
     {
-        if ($file->document_id !== $document->id) {
+
+        if (!request()->hasValidSignature()) {
+            return response()->json([
+                'message' => 'Url expirada o inválida.'
+            ], 403);
+        }
+
+        if (!Storage::disk('private')->exists($file->file_path)) {
+            return response()->json([
+                'message' => 'El archivo no existe.'
+            ], 404);
+        }
+
+        return Storage::disk('private')->download($file->file_path, $file->file_name, [
+            'Content-Type' => $file->mime_type,
+            'Content-Disposition' => 'attachment; filename="' . $file->file_name . '"'
+        ]);
+
+        /*if ($file->document_id !== $document->id) {
             return response()->json([
                 'message' => 'Unauthorized'
             ], 403);
@@ -132,9 +170,7 @@ class DocumentFileController extends Controller
         $path = Storage::disk('private')->path($file->file_path);
         return response()->download($path, $file->file_name);
 
-        /*return Storage::disk('private')->download(
-            $file->file_path,
-            $file->file_name
-        );*/
+        */
     }
 }
+

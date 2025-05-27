@@ -91,7 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::middleware(['permission:read'])->group(function () {
         Route::get('/documents/{document}/files/{file}/preview', [DocumentFileController::class, 'show']);
-        Route::get('/documents/{document}/files/{file}/download', [DocumentFileController::class, 'download']);
+        Route::middleware('signed:relative')->get('/documents/{document}/files/{file}/download', [DocumentFileController::class, 'download'])->name('api.files.download');
     });
 
 });
