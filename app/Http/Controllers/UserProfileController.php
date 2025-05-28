@@ -32,17 +32,24 @@ class UserProfileController extends Controller
      */
     public function update(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = auth()->user();
 
         try {
             $validator = Validator::make($request->all(), [
                 'name' => 'sometimes|string|max:255',
                 'username' => 'sometimes|string|max:255|unique:users,username,' . $user->id,
-
                 'new_password' => 'sometimes|string|min:8|confirmed',
-                'current_password' => 'required_with:new_password,new_password_confirmation',
-
-                'profile_photo' => 'sometimes|image|max:2048', // Max 2MB
+                'current_password' => 'required_with:new_password',
+                'profile_photo' => 'sometimes|image|max:2048',
+            ], [
+                'name.max' => 'El nombre no puede tener más de 255 caracteres.',
+                'username.max' => 'El nombre de usuario no puede tener más de 255 caracteres.',
+                'username.unique' => 'El nombre de usuario ya está en uso.',
+                'new_password.min' => 'La nueva contraseña debe tener al menos 8 caracteres.',
+                'new_password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
+                'current_password.required_with' => 'Debes ingresar la contraseña actual para cambiar la contraseña.',
+                'profile_photo.image' => 'La foto de perfil debe ser una imagen.',
+                'profile_photo.max' => 'La foto de perfil no debe superar los 2MB.',
             ]);
 
             if ($validator->fails()) {
@@ -52,38 +59,55 @@ class UserProfileController extends Controller
             }
 
             $data = $validator->validated();
-            $user->fill($data);
+            $changesMade = false;
 
-            // Handle profile photo upload
+            if ($request->has('name')) {
+                $user->name = $data['name'];
+                $changesMade = true;
+            }
 
-            $profile = $user->profile ?? $user->profile()->create();
-            $profile->updatePhoto($request->file('profile_photo'));
+            if ($request->has('username')) {
+                $user->username = $data['username'];
+                $changesMade = true;
+            }
 
             if ($request->has('new_password')) {
-                if (!Hash::check($request->input('current_password'), $user->password)) {
+                if (!Hash::check($data['current_password'], $user->password)) {
                     return response()->json([
                         'error' => 'Current password is incorrect.'
                     ], 422);
                 }
-                $user->password = Hash::make($request->input('new_password'));
+                $user->password = Hash::make($data['new_password']);
+                $changesMade = true;
             }
 
-            if ($request->has('name')) $user->name = $request->input('name');
-            if ($request->has('username')) $user->username = $request->input('username');
-            if ($user->isDirty()) $user->save();
+            if ($request->hasFile('profile_photo')) {
+                $profile = $user->profile ?? $user->profile()->create();
+                $profile->updatePhoto($request->file('profile_photo'));
+                $changesMade = true;
+            }
 
-            return response()->json([
-                'status' => 'profile-updated',
-                'user' => array_merge(
-                    $user->only(['name', 'username']),
-                    ['profile_photo' => $user->profile_photo_url]
-                ),
-            ], 200);
+            if ($changesMade) {
+                $user->save();
+                return response()->json([
+                    'status' => 'profile-updated',
+                    'user' => [
+                        'name' => $user->name,
+                        'username' => $user->username,
+                        'profile_photo' => $user->profile_photo_url
+                    ],
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'No hay cambios para actualizar.',
+                ], 200);
+            }
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to update profile: ' . $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Failed to update profile: ' . $e->getMessage()
+            ], 500);
         }
     }
-
     /**
      * Delete the user's account.
      */

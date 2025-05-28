@@ -37,7 +37,7 @@ Route::get('/check_token', [Authcontroller::class, 'checkToken']);
  */
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [UserProfileController::class, 'edit']);
-    Route::put('/profile', [UserProfileController::class, 'update']);
+    Route::patch('/profile', [UserProfileController::class, 'update']);
     Route::delete('/profile', [UserProfileController::class, 'destroy']);
     Route::post('logout', [AuthController::class, 'destroy']);
     Route::post('logoutAllDevices', [AuthController::class, 'logoutAllDevices']);

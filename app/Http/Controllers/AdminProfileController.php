@@ -103,6 +103,25 @@ class AdminProfileController extends Controller
             ], 200);
     }
 
+    public function edit(User $user)
+    {
+        $admin = auth()->user();
+        if (!$admin->hasRole('admin')) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'username' => $user->username,
+            'roles' => $user->getRoleNames(),
+            'permissions' => $user->getPermissionNames(),
+
+        ], 200);
+    }
+
     /**
      * Update the specified user.
      */
