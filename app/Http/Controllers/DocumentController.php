@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Comment;
 use App\Models\Department;
 use App\Models\Document;
+use App\Models\DocumentFile;
 use App\Models\Status;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;

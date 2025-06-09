@@ -100,4 +100,33 @@ class Document extends Model
         return $this->hasMany(DocumentFile::class);
     }
 
+    /**
+     * Get the parent document if it exists
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Document::class, 'parent_id');
+    }
+
+    /**
+     * Get all of the child documents
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function children(): HasMany
+    {
+        return $this->hasMany(Document::class, 'parent_id');
+    }
+
+    /**
+     * Get all of the status histories for the Document
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function statusHistories()
+    {
+        return $this->hasMany(DocumentStatusHistory::class);
+    }
 }

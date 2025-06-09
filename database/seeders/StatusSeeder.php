@@ -16,12 +16,14 @@ class StatusSeeder extends Seeder
     {
         $now = Carbon::now();
         DB::table('statuses')->insert([
-            ['name' => 'Recepcionado', 'created_at' => $now],
-            ['name' => 'En Tramite', 'created_at' => $now],
-            ['name' => 'En Firma', 'created_at' => $now],
-            ['name' => 'Concluido', 'created_at' => $now],
-            ['name' => 'Entregado', 'created_at' => $now],
-            ['name' => 'Cancelado', 'created_at' => $now],
+            ['name' => 'Recepcionado', 'key' => 'received', 'created_at' => $now],
+            ['name' => 'En Tramite', 'key' => 'in_process', 'created_at' => $now],
+            ['name' => 'En Firma', 'key' => 'in_signing', 'created_at' => $now],
+            ['name' => 'Firmado', 'key' => 'in_signed', 'created_at' => $now],
+            ['name' => 'Concluido', 'key' => 'completed', 'created_at' => $now],
+            ['name' => 'Entregado', 'key' => 'delivered', 'created_at' => $now],
+            ['name' => 'Archivado', 'key' => 'archived', 'created_at' => $now],
+            ['name' => 'Cancelado', 'key' => 'cancelled', 'created_at' => $now],
 
         ]);
     }

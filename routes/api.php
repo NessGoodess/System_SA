@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentFileController;
+use App\Http\Controllers\DocumentStatusHistoryController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ Route::get('/check_token', [Authcontroller::class, 'checkToken']);
  */
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [UserProfileController::class, 'edit']);
-    Route::put('/profile', [UserProfileController::class, 'update']);
+    Route::patch('/profile', [UserProfileController::class, 'update']);
     Route::delete('/profile', [UserProfileController::class, 'destroy']);
     Route::post('logout', [AuthController::class, 'destroy']);
     Route::post('logoutAllDevices', [AuthController::class, 'logoutAllDevices']);
@@ -70,6 +71,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('auth:sanctum', 'permission:delete')->group(function () {
         Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
     });
+
+
+    /**
+     * API Routes for document status history management.
+     */
+
+    Route::middleware('permission:create')->group(function () {
+        Route::get('/documents/{document}/status', [DocumentStatusHistoryController::class, 'index']);
+        Route::post('/documents/{document}/status', [DocumentStatusHistoryController::class, 'store']);
+
+    });
+
+
 
 
 
