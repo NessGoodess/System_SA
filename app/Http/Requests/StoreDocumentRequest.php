@@ -45,12 +45,8 @@ class StoreDocumentRequest extends FormRequest
                 'file',
                 'mimes:pdf,txt,csv,xls,xlsx,doc,docx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,zip,rar,mp3,mp4',
                 'max:10240',
-                /*function ($attribute, $value, $fail) {
-                    if (preg_match('/[^\w\.\-]/', $value->getClientOriginalName())) {
-                        $fail('El nombre del archivo contiene caracteres no permitidos.');
-                    }
-                }*/
-            ]
+            ],
+            'parent_id' => 'nullable|integer|exists:documents,id'
         ];
     }
 }

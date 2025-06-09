@@ -72,7 +72,7 @@ class AdminProfileController extends Controller
         return response()
             ->json([
                 'message' => 'User created successfully',
-                'data' => $user-> only(['id', 'name', 'username']),
+                'data' => $user->only(['id', 'name', 'username']),
                 'roles' => $user->getRoleNames(),
                 'permissions' => $user->getPermissionNames(),
                 'department' => $user->department ? [
@@ -88,7 +88,7 @@ class AdminProfileController extends Controller
 
     public function show(User $user)
     {
-         return response()->json(
+        return response()->json(
             [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -100,7 +100,9 @@ class AdminProfileController extends Controller
                     'id' => $user->department->id,
                     'name' => $user->department->name,
                 ] : null,
-            ], 200);
+            ],
+            200
+        );
     }
 
     public function edit(User $user)
@@ -219,6 +221,5 @@ class AdminProfileController extends Controller
             'notifications' => $user->notifications,
             'unread_notifications' => $user->unreadNotifications,
         ]);
-
     }
 }
