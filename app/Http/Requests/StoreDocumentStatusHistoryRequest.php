@@ -23,7 +23,7 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status_id' => 'required|exists:statuses,id',
+            'status_id' => 'required|exists:statuses,key',
             'comment' => 'nullable|string|max:255',
             'form' => 'required|array',
         ];
@@ -31,12 +31,11 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
 
     public function withValidator($validator)
     {
-
-        $status = Status::find($this->status_id);
+        $status = $this->status_id;
         $form = is_array($this->form) ? $this->form : [];
 
         $validator->after(function ($validator) use ($status, $form) {
-            if ($status->key === 'received') { // Recepcionado
+            if ($status === 'received') { // Recepcionado
                 if (empty($form['received_by'])) {
                     $validator->errors()->add('form.received_by', 'Debe indicar quien recibio el documento');
                 }
@@ -45,7 +44,7 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 }
             }
 
-            if ($status->key === 'in_process') { // En trámite
+            if ($status === 'in_process') { // En trámite
                 if (empty($form['responsible'])) {
                     $validator->errors()->add('form.responsible', 'Debe indicar el responsable del trámite.');
                 }
@@ -57,7 +56,7 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 }
             }
 
-            if ($status->key === 'in_signing') { // En firma
+            if ($status === 'in_signing') { // En firma
                 if (empty($form['sent_to'])) {
                     $validator->errors()->add('form.sent_to', 'Debe indicar a quién se envió para firma.');
                 }
@@ -69,7 +68,7 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 }
             }
 
-            if ($status->key === 'in_signed') { // Firmado
+            if ($status === 'in_signed') { // Firmado
                 if (empty($form['concluded_by'])) {
                     $validator->errors()->add('form.concluded_by', 'Debe indicar quién firmó el documento.');
                 }
@@ -81,7 +80,7 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 }
             }
 
-            if ($status->key === 'completed') { //Concluido
+            if ($status === 'completed') { //Concluido
                 if (empty($form['concluded_by'])) {
                     $validator->errors()->add('form.concluded_by', 'Debe indicar quién concluyó el documento.');
                 }
@@ -93,16 +92,7 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 }
             }
 
-            if ($status->key === 'delivered') { // Archivado
-                if (empty($form['archived_by'])) {
-                    $validator->errors()->add('form.archived_by', 'Debe indicar quién archivó el documento.');
-                }
-                if (empty($form['archived_date'])) {
-                    $validator->errors()->add('form.archived_date', 'Debe indicar la fecha en que se archiva');
-                }
-            }
-
-            if ($status->key === 'archived') { // Entregado
+            if ($status === 'delivered') { //Entregado
                 if (empty($form['delivered_by'])) {
                     $validator->errors()->add('form.delivered_by', 'Debe indicar quién entregó el documento.');
                 }
@@ -114,14 +104,33 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 if (empty($form['delivery_date'])) {
                     $validator->errors()->add('form.delivery_date', 'Debe indicar la fecha de entrega.');
                 }
+                if (empty($form['delivery_notes'])) {
+                    $validator->errors()->add('form.delivery_date', 'Debe dar detalles de la entrega');
+                }
             }
 
-            if ($status->key === 'cancelled') { // Cancelado
+            if ($status === 'archived') { // Archivado
+                if (empty($form['archived_date'])) {
+                    $validator->errors()->add('form.archived_date', 'Debe indicar la fecha en que se archiva');
+                }
+                if (empty($form['archived_by'])) {
+                    $validator->errors()->add('form.archived_by', 'Debe indicar quién archivó el documento.');
+                }
+
+                if (!empty($form['archived_file_location']) && !is_string($form['archived_file_location'])) {
+                    $validator->errors()->add('form.archived_file_location', 'La ubicación del archivo debe ser una cadena de texto.');
+                }
+            }
+
+            if ($status === 'cancelled') { // Cancelado
                 if (empty($form['cancellation_reason'])) {
                     $validator->errors()->add('form.cancellation_reason', 'Debe indicar el motivo de la cancelación.');
                 }
                 if (empty($form['cancellation_date'])) {
                     $validator->errors()->add('form.cancellation_date', 'Debe indicar la fecha de cancelación.');
+                }
+                if (empty($form['cancellation_notes']) && !is_string($form['cancellation_notes'])) {
+                    $validator->errors()->add('form.cancellation_notes', 'Las Notas deben ser una cadena de texto.');
                 }
             }
         });

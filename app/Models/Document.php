@@ -27,6 +27,7 @@ class Document extends Model
         'issue_date',
         'received_date',
         'priority',
+        'parent_id',
     ];
 
     protected static function boot()

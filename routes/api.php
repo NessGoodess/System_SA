@@ -80,7 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('permission:create')->group(function () {
         Route::get('/documents/{document}/status', [DocumentStatusHistoryController::class, 'index']);
         Route::post('/documents/{document}/status', [DocumentStatusHistoryController::class, 'store']);
-
+        Route::get('/documents/{document}/status/{documentStatusHistory}', [DocumentStatusHistoryController::class, 'show']);
     });
 
 

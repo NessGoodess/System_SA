@@ -14,16 +14,20 @@ class DocumentStatusHistoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($documentId)
     {
-        $documentStatusHistories = Document::with(['status', 'children.status'])
-        ->whereNull('parent_id')
-        ->orderBy('created_at', 'desc')
-        ->get();
+
+        $documentsStatusHistories = DocumentStatusHistory::with(['status'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $relatedDocuments = Document::where('parent_id', $documentId)
+            ->get();
 
         return response()->json([
-            'message' => 'Historial de estados',
-            'data' => $documentStatusHistories
+            'message' => 'Historial de estado del documento',
+            'data' => $documentsStatusHistories,
+            'related_documents' => $relatedDocuments
         ], 200);
     }
 
@@ -32,16 +36,19 @@ class DocumentStatusHistoryController extends Controller
      */
     public function store(StoreDocumentStatusHistoryRequest $request, Document $document)
     {
+
+        // Obtener el ID real del status basado en el key recibido en el request
+        $status = Status::where('key', $request->status_id)->firstOrFail();
         $documentStatusHistory = DocumentStatusHistory::create([
             'document_id' => $document->id,
-            'status_id' => $request->status_id,
+            'status_id' => $status->id,
             'comment' => $request->comment,
             'form' => $request->form,
         ]);
 
         // Update the document's current status
         $document->update([
-            'status_id' => $request->status_id,
+            'status_id' => $status->id,
         ]);
 
         return response()->json([
@@ -54,7 +61,7 @@ class DocumentStatusHistoryController extends Controller
      */
     public function show(DocumentStatusHistory $documentStatusHistory)
     {
-        //
+        $documentStatusHistory = DocumentStatusHistory::with(['document', 'status'])->findOrFail($documentStatusHistory->id);
     }
 
     /**

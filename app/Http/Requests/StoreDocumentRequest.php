@@ -37,7 +37,7 @@ class StoreDocumentRequest extends FormRequest
             'issue_date' => 'required|date',
             'received_date' => 'nullable|date',
             'description' => 'nullable|string',
-            'priority' => 'nullable|integer',
+            //'priority' => 'nullable|integer',
 
             'files' => 'nullable|array|max:10',
             'files.*' => [
@@ -46,7 +46,7 @@ class StoreDocumentRequest extends FormRequest
                 'mimes:pdf,txt,csv,xls,xlsx,doc,docx,ppt,pptx,jpg,jpeg,png,gif,svg,webp,zip,rar,mp3,mp4',
                 'max:10240',
             ],
-            'parent_id' => 'nullable|integer|exists:documents,id'
+            'parent_id' => 'nullable|string|exists:documents,id'
         ];
     }
 }
