@@ -18,18 +18,21 @@ class DocumentStatusHistoryController extends Controller
     {
 
         $documentsStatusHistories = DocumentStatusHistory::where('document_id', $document)
-            ->with(['status'])
+            ->with(['status', 'relatedDocument'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $relatedDocuments = Document::where('parent_id', $document)->get();
+        /*$relatedDocuments = Document::where('parent_id', $document)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();*/
 
         return response()->json([
             'message' => $documentsStatusHistories->isEmpty()
                 ? 'No hay historial de estado para este documento.'
                 : 'Historial de estado obtenido.',
             'data' => $documentsStatusHistories,
-            'related_documents' => $relatedDocuments
+            /*'related_documents' => $relatedDocuments*/
         ], 200);
     }
 
@@ -46,6 +49,7 @@ class DocumentStatusHistoryController extends Controller
             'status_id' => $status->id,
             'comment' => $request->comment,
             'form' => $request->form,
+            'related_document_id' => $request->related_document_id,
         ]);
 
         // Update the document's current status

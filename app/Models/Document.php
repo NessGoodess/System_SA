@@ -128,6 +128,16 @@ class Document extends Model
      */
     public function statusHistories()
     {
-        return $this->hasMany(DocumentStatusHistory::class);
+        return $this->hasMany(DocumentStatusHistory::class, 'document_id');
+    }
+
+    /**
+     * Get the latest status history for the Document
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function relatedStatusHistory()
+    {
+        return $this->hasMany(DocumentStatusHistory::class, 'related_document_id');
     }
 }

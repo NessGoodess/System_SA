@@ -14,6 +14,7 @@ class DocumentStatusHistory extends Model
         'status_id',
         'comment',
         'form',
+        'related_document_id',
     ];
 
     protected $casts = [
@@ -38,5 +39,15 @@ class DocumentStatusHistory extends Model
     public function status(): BelongsTo
     {
         return $this->belongsTo(Status::class);
+    }
+
+    /**
+     * Get the related document that owns the DocumentStatusHistory
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function relatedDocument(): BelongsTo
+    {
+        return $this->belongsTo(Document::class, 'related_document_id');
     }
 }

@@ -26,6 +26,7 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
             'status_id' => 'required|exists:statuses,key',
             'comment' => 'nullable|string|max:255',
             'form' => 'required|array',
+            'related_document_id' => 'nullable|exists:documents,id',
         ];
     }
 
@@ -51,9 +52,9 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 if (empty($form['department'])) {
                     $validator->errors()->add('form.department', 'Debe indicar el departamento asignado.');
                 }
-                if (empty($form['description'])) {
+                /*if (empty($form['description'])) {
                     $validator->errors()->add('form.description', 'Debe indicar la descripción del trámite.');
-                }
+                }*/
             }
 
             if ($status === 'in_signing') { // En firma
@@ -63,9 +64,9 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 if (empty($form['position'])) {
                     $validator->errors()->add('form.position', 'Debe indicar el cargo del firmante.');
                 }
-                if (empty($form['deadline_date'])) {
+                /*if (empty($form['deadline_date'])) {
                     $validator->errors()->add('form.deadline_date', 'Debe indicar la fecha límite para la firma.');
-                }
+                }*/
             }
 
             if ($status === 'in_signed') { // Firmado
@@ -75,9 +76,9 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 if (empty($form['signing_date'])) {
                     $validator->errors()->add('form.signing_date', 'Debe indicar la fecha de firma.');
                 }
-                if (empty($form['conclusion_notes'])) {
+                /*if (empty($form['conclusion_notes'])) {
                     $validator->errors()->add('form.conclusion_notes', 'Debe indicar las notas de conclusión.');
-                }
+                }*/
             }
 
             if ($status === 'completed') { //Concluido
@@ -87,9 +88,9 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 if (empty($form['conclusion_date'])) {
                     $validator->errors()->add('form.conclusion_date', 'Debe indicar la fecha de conclusión.');
                 }
-                if (empty($form['conclusion_notes'])) {
+                /*if (empty($form['conclusion_notes'])) {
                     $validator->errors()->add('form.conclusion_notes', 'Debe indicar las notas de conclusión.');
-                }
+                }*/
             }
 
             if ($status === 'delivered') { //Entregado
@@ -104,9 +105,9 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 if (empty($form['delivery_date'])) {
                     $validator->errors()->add('form.delivery_date', 'Debe indicar la fecha de entrega.');
                 }
-                if (empty($form['delivery_notes'])) {
+                /*if (empty($form['delivery_notes'])) {
                     $validator->errors()->add('form.delivery_date', 'Debe dar detalles de la entrega');
-                }
+                }*/
             }
 
             if ($status === 'archived') { // Archivado
@@ -117,9 +118,9 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                     $validator->errors()->add('form.archived_by', 'Debe indicar quién archivó el documento.');
                 }
 
-                if (!empty($form['archived_file_location']) && !is_string($form['archived_file_location'])) {
+                /*if (!empty($form['archived_file_location']) && !is_string($form['archived_file_location'])) {
                     $validator->errors()->add('form.archived_file_location', 'La ubicación del archivo debe ser una cadena de texto.');
-                }
+                }*/
             }
 
             if ($status === 'cancelled') { // Cancelado
@@ -129,9 +130,9 @@ class StoreDocumentStatusHistoryRequest extends FormRequest
                 if (empty($form['cancellation_date'])) {
                     $validator->errors()->add('form.cancellation_date', 'Debe indicar la fecha de cancelación.');
                 }
-                if (empty($form['cancellation_notes']) && !is_string($form['cancellation_notes'])) {
+                /*if (empty($form['cancellation_notes']) && !is_string($form['cancellation_notes'])) {
                     $validator->errors()->add('form.cancellation_notes', 'Las Notas deben ser una cadena de texto.');
-                }
+                }*/
             }
         });
     }

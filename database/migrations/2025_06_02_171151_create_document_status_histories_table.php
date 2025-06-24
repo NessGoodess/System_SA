@@ -17,10 +17,12 @@ return new class extends Migration
             $table->unsignedBigInteger('status_id');
             $table->text('comment')->nullable();
             $table->json('form')->nullable();
+            $table->uuid('related_document_id')->nullable();
             $table->timestamps();
 
             $table->foreign('document_id')->references('id')->on('documents')->onDelete('cascade');
             $table->foreign('status_id')->references('id')->on('statuses')->onDelete('cascade');
+            $table->foreign('related_document_id')->references('id')->on('documents')->onDelete('cascade');
         });
     }
 
