@@ -41,6 +41,8 @@ class DocumentController extends Controller
             'receiver_department:id,name',
         ]);
 
+        $query->whereNull('parent_id')->orderBy('received_date', 'desc');
+
         if (!$user->isAdmin()) {
             $query->where('receiver_department_id', $user->department_id);
         }

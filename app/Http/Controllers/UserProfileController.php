@@ -74,7 +74,7 @@ class UserProfileController extends Controller
             if ($request->has('new_password')) {
                 if (!Hash::check($data['current_password'], $user->password)) {
                     return response()->json([
-                        'error' => 'Current password is incorrect.'
+                        'error' => 'La contraseña actual no es correcta.'
                     ], 422);
                 }
                 $user->password = Hash::make($data['new_password']);
@@ -99,6 +99,7 @@ class UserProfileController extends Controller
                 ], 200);
             } else {
                 return response()->json([
+                    'status' => 'no-changes',
                     'message' => 'No hay cambios para actualizar.',
                 ], 200);
             }

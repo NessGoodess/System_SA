@@ -16,11 +16,29 @@ class DocumentStatusHistoryController extends Controller
      */
     public function index($document)
     {
-
         $documentsStatusHistories = DocumentStatusHistory::where('document_id', $document)
             ->with(['status', 'relatedDocument'])
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // Modificar los datos para incluir el nombre del departamento cuando sea necesario
+        $documentsStatusHistories->transform(function ($history) {
+            if ($history->status->key === 'in_process' && isset($history->form['department'])) {
+                // Buscar el departamento por ID y agregar el nombre
+                $department = \App\Models\Department::find($history->form['department']);
+                if ($department) {
+                    // Crear un nuevo array con los datos modificados
+                    $formData = $history->form;
+                    $formData['department'] = [
+                        'id' => $department->id,
+                        'name' => $department->name
+                    ];
+                    // Asignar el nuevo array
+                    $history->form = $formData;
+                }
+            }
+            return $history;
+        });
 
         /*$relatedDocuments = Document::where('parent_id', $document)
             ->orderBy('created_at', 'desc')

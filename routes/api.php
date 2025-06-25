@@ -19,6 +19,10 @@ Route::get('/user', function (Request $request) {
             'name' => $user->name,
             'role' => $user->getRoleNames()->first(),
             'permission' => $user->getPermissionNames(),
+            'department' => $user->department ? [
+                'id' => $user->department->id,
+                'name' => $user->department->name,
+            ] : null,
         ];
 })->middleware('auth:sanctum');
 
