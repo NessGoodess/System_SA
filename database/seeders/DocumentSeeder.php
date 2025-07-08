@@ -21,7 +21,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Informe de Evaluación de Personal',
-                'reference_number' => 'DOC-1001',
+                'reference_number' => 'DOC-1001-v10',
                 'description' => 'Informe detallado del rendimiento del personal administrativo.',
                 'category_id' => 2,
                 'status_id' => 2,
@@ -36,7 +36,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Solicitud de Vacaciones Colectivas',
-                'reference_number' => 'DOC-1002',
+                'reference_number' => 'DOC-1002-v10',
                 'description' => 'Petición de vacaciones para el área de Recursos Humanos.',
                 'category_id' => 1,
                 'status_id' => 1,
@@ -51,7 +51,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Acta de Evaluación de Personal',
-                'reference_number' => 'DOC-1003',
+                'reference_number' => 'DOC-1003-v10',
                 'description' => 'Acta oficial de evaluación semestral.',
                 'category_id' => 2,
                 'status_id' => 3,
@@ -66,7 +66,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Oficio de Renovación de Contratos',
-                'reference_number' => 'DOC-1004',
+                'reference_number' => 'DOC-1004-v10',
                 'description' => 'Notificación de renovación de contratos del personal.',
                 'category_id' => 1,
                 'status_id' => 1,
@@ -81,7 +81,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Solicitud de Cambio de Horario',
-                'reference_number' => 'DOC-1005',
+                'reference_number' => 'DOC-1005-v10',
                 'description' => 'Requerimiento de modificación de horario laboral.',
                 'category_id' => 1,
                 'status_id' => 2,
@@ -96,7 +96,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Solicitud de Evaluación de Desempeño',
-                'reference_number' => 'DOC-2003',
+                'reference_number' => 'DOC-2003-v10',
                 'description' => 'Solicitud para iniciar proceso de evaluación del personal administrativo.',
                 'category_id' => 1,
                 'status_id' => 1,
@@ -111,7 +111,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Acta de Comité de Evaluación',
-                'reference_number' => 'DOC-2004',
+                'reference_number' => 'DOC-2004-v10',
                 'description' => 'Resultados de la evaluación semestral de desempeño.',
                 'category_id' => 2,
                 'status_id' => 3,
@@ -126,7 +126,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Informe de Asistencia de Personal',
-                'reference_number' => 'DOC-2005',
+                'reference_number' => 'DOC-2005-v10',
                 'description' => 'Informe trimestral de asistencia de los trabajadores.',
                 'category_id' => 4,
                 'status_id' => 2,
@@ -141,7 +141,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Oficio de Reasignación de Personal',
-                'reference_number' => 'DOC-2006',
+                'reference_number' => 'DOC-2006-v10',
                 'description' => 'Notificación de cambios de área para empleados administrativos.',
                 'category_id' => 1,
                 'status_id' => 4,
@@ -156,7 +156,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Solicitud de Contratación por Suplencia',
-                'reference_number' => 'DOC-2007',
+                'reference_number' => 'DOC-2007-v10',
                 'description' => 'Solicitud temporal por ausencia prolongada de personal.',
                 'category_id' => 1,
                 'status_id' => 1,
@@ -171,7 +171,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Solicitud de Pago Extraordinario',
-                'reference_number' => 'DOC-3001',
+                'reference_number' => 'DOC-3001-v10',
                 'description' => 'Solicitud de pago por horas extra del mes de abril.',
                 'category_id' => 1,
                 'status_id' => 1,
@@ -186,7 +186,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Informe de Cálculo de Aguinaldo',
-                'reference_number' => 'DOC-3002',
+                'reference_number' => 'DOC-3002-v10',
                 'description' => 'Cálculo estimado del pago de aguinaldo para fin de año.',
                 'category_id' => 4,
                 'status_id' => 2,
@@ -201,7 +201,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Oficio de Notificación de Incremento Salarial',
-                'reference_number' => 'DOC-3003',
+                'reference_number' => 'DOC-3003-v10',
                 'description' => 'Autorización para el ajuste salarial por nivel de desempeño.',
                 'category_id' => 1,
                 'status_id' => 3,
@@ -216,7 +216,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Acta de Revisión de Tabulador Salarial',
-                'reference_number' => 'DOC-3004',
+                'reference_number' => 'DOC-3004-v10',
                 'description' => 'Revisión semestral de tabulador de sueldos y salarios.',
                 'category_id' => 2,
                 'status_id' => 4,
@@ -231,7 +231,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Reporte de Deducciones Mensuales',
-                'reference_number' => 'DOC-3005',
+                'reference_number' => 'DOC-3005-v10',
                 'description' => 'Informe detallado de deducciones por quincena.',
                 'category_id' => 4,
                 'status_id' => 5,
@@ -247,7 +247,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Informe Trimestral de Presupuesto',
-                'reference_number' => 'DOC-4001',
+                'reference_number' => 'DOC-4001-v10',
                 'description' => 'Informe del uso presupuestal correspondiente al primer trimestre.',
                 'category_id' => 4,
                 'status_id' => 2,
@@ -262,7 +262,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Solicitud de Redistribución Presupuestal',
-                'reference_number' => 'DOC-4002',
+                'reference_number' => 'DOC-4002-v10',
                 'description' => 'Petición para redistribuir partidas presupuestales entre departamentos.',
                 'category_id' => 1,
                 'status_id' => 1,
@@ -277,7 +277,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Acta de Aprobación de Proyecto',
-                'reference_number' => 'DOC-4003',
+                'reference_number' => 'DOC-4003-v10',
                 'description' => 'Acta de reunión para la aprobación del proyecto de inversión institucional.',
                 'category_id' => 2,
                 'status_id' => 3,
@@ -292,7 +292,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Oficio de Asignación de Recursos',
-                'reference_number' => 'DOC-4004',
+                'reference_number' => 'DOC-4004-v10',
                 'description' => 'Asignación oficial de recursos para actividades académicas.',
                 'category_id' => 1,
                 'status_id' => 4,
@@ -307,7 +307,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Reporte de Inventarios Departamentales',
-                'reference_number' => 'DOC-4005',
+                'reference_number' => 'DOC-4005-v10',
                 'description' => 'Resumen de inventarios entregado por cada departamento.',
                 'category_id' => 4,
                 'status_id' => 5,
@@ -322,7 +322,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Acta de Transferencia Documental',
-                'reference_number' => 'DOC-5001',
+                'reference_number' => 'DOC-5001-v10',
                 'description' => 'Acta para el traspaso de documentos a la unidad de archivo.',
                 'category_id' => 2,
                 'status_id' => 1,
@@ -337,7 +337,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Solicitud de Resguardo de Expediente',
-                'reference_number' => 'DOC-5002',
+                'reference_number' => 'DOC-5002-v10',
                 'description' => 'Solicitud para el resguardo de expediente académico.',
                 'category_id' => 1,
                 'status_id' => 2,
@@ -352,7 +352,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Informe de Documentación Histórica',
-                'reference_number' => 'DOC-5003',
+                'reference_number' => 'DOC-5003-v10',
                 'description' => 'Informe sobre documentos históricos recuperados.',
                 'category_id' => 4,
                 'status_id' => 4,
@@ -367,7 +367,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Oficio de Digitalización de Archivos',
-                'reference_number' => 'DOC-5004',
+                'reference_number' => 'DOC-5004-v10',
                 'description' => 'Oficio que solicita la digitalización de archivos físicos.',
                 'category_id' => 1,
                 'status_id' => 3,
@@ -382,7 +382,7 @@ class DocumentSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'title' => 'Acta de Depuración de Expedientes',
-                'reference_number' => 'DOC-5005',
+                'reference_number' => 'DOC-5005-v10',
                 'description' => 'Acta de reunión para definir los expedientes a depurar.',
                 'category_id' => 2,
                 'status_id' => 5,

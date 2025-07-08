@@ -24,7 +24,7 @@ class UpdateDocumentRequest extends FormRequest
         $user = $this->user();
         return [
             'title' => 'sometimes|required|string|max:255',
-            'reference_number' => 'nullable|string|max:255|unique:documents,reference_number,' . $this->document->id,
+            'reference_number' => 'nullable|string|max:255',
             'category_id' => 'sometimes|required|integer|exists:categories,id',
             'status_id' => 'sometimes|required|integer|exists:statuses,id',
             'sender_department_id' => 'sometimes|required_without:new_sender_department|integer|exists:departments,id',

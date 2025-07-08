@@ -25,7 +25,7 @@ class StoreDocumentRequest extends FormRequest
 
         return [
             'title' => 'required|string|max:255',
-            'reference_number' => 'nullable|string|max:255|unique:documents,reference_number,' . $this->route('document')?->id,
+            'reference_number' => 'nullable|string|max:255',
             'category_id' => 'required|integer|exists:categories,id',
             'status_id' => 'required|integer|exists:statuses,id',
 

@@ -40,6 +40,20 @@ class AdminProfileController extends Controller
             'permissions' => 'required|array',
             'permissions.*' => 'string|exists:permissions,name',
             'department_id' => 'nullable|exists:departments,id',
+        ], [
+            'name.required' => 'El nombre es obligatorio',
+            'name.max' => 'El nombre no puede tener más de 255 caracteres',
+            'username.required' => 'El nombre de usuario es obligatorio',
+            'username.max' => 'El nombre de usuario no puede tener más de 255 caracteres',
+            'username.unique' => 'El usuario ya existe',
+            'password.required' => 'La contraseña es obligatoria',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+            'role.required' => 'El rol es obligatorio',
+            'role.in' => 'El rol debe ser admin o user',
+            'permissions.required' => 'Los permisos son obligatorios',
+            'permissions.array' => 'Los permisos deben ser un array',
+            'permissions.*.exists' => 'Uno de los permisos seleccionados no existe',
+            'department_id.exists' => 'El departamento seleccionado no existe',
         ]);
 
         if ($validator->fails()) {
@@ -146,6 +160,23 @@ class AdminProfileController extends Controller
             'role' => 'sometimes|required|string|exists:roles,name',
             'permissions' => 'sometimes|required|array',
             'permissions.*' => 'string|exists:permissions,name',
+            'department_id' => 'sometimes|nullable|exists:departments,id',
+        ], [
+            'name.required' => 'El nombre es obligatorio',
+            'name.max' => 'El nombre no puede tener más de 255 caracteres',
+            'username.required' => 'El nombre de usuario es obligatorio',
+            'username.max' => 'El nombre de usuario no puede tener más de 255 caracteres',
+            'username.unique' => 'El usuario ya existe',
+            'new_password.required' => 'La nueva contraseña es obligatoria',
+            'new_password.min' => 'La nueva contraseña debe tener al menos 8 caracteres',
+            'new_password.confirmed' => 'La confirmación de la nueva contraseña no coincide',
+            'admin_password.required_with' => 'La contraseña de administrador es obligatoria cuando se cambia la contraseña',
+            'role.required' => 'El rol es obligatorio',
+            'role.exists' => 'El rol seleccionado no existe',
+            'permissions.required' => 'Los permisos son obligatorios',
+            'permissions.array' => 'Los permisos deben ser un array',
+            'permissions.*.exists' => 'Uno de los permisos seleccionados no existe',
+            'department_id.exists' => 'El departamento seleccionado no existe',
         ]);
 
         if ($validator->fails()) {
@@ -160,8 +191,11 @@ class AdminProfileController extends Controller
 
             if (!Hash::check($request->input('admin_password'), $admin->password)) {
                 return response()->json([
-                    'message' => 'Admin password is incorrect'
-                ], 403);
+                    'message' => 'Admin password is incorrect',
+                    'errors' => [
+                        'admin_password' => ['La contraseña de administrador es incorrecta']
+                    ]
+                ], 422);
             }
             $user->password = Hash::make($request->input('new_password'));
             $updated = true;
@@ -177,6 +211,11 @@ class AdminProfileController extends Controller
             $updated = true;
         }
 
+        if ($request->has('department_id')) {
+            $user->department_id = $request->input('department_id');
+            $updated = true;
+        }
+
         if ($updated) {
             $user->save();
         }
@@ -189,11 +228,18 @@ class AdminProfileController extends Controller
             $user->syncPermissions($request->input('permissions'));
         }
 
+        // Cargar explícitamente la relación department
+        $user->load('department');
+
         return response()->json([
             'message' => 'User updated successfully by admin',
             'data' => $user->only(['id', 'name', 'username']),
             'roles' => $user->getRoleNames(),
             'permissions' => $user->getPermissionNames(),
+            'department' => $user->department ? [
+                'id' => $user->department->id,
+                'name' => $user->department->name,
+            ] : null,
         ], 200);
     }
 
