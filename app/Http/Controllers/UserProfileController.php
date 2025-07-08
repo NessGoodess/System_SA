@@ -44,7 +44,7 @@ class UserProfileController extends Controller
             ], [
                 'name.max' => 'El nombre no puede tener más de 255 caracteres.',
                 'username.max' => 'El nombre de usuario no puede tener más de 255 caracteres.',
-                'username.unique' => 'El nombre de usuario ya está en uso.',
+                'username.unique' => 'El usuario ya existe',
                 'new_password.min' => 'La nueva contraseña debe tener al menos 8 caracteres.',
                 'new_password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
                 'current_password.required_with' => 'Debes ingresar la contraseña actual para cambiar la contraseña.',
